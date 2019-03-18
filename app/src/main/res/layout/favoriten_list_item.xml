@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             tools:context=".FavoritenListItem" android:clickable="true"
+>
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:touchscreenBlocksFocus="true"
+            android:baselineAligned="false" android:gravity="center_vertical" android:clickable="false"
+            android:focusable="auto">
+        <ImageView
+                android:layout_width="90dp"
+                android:layout_height="90dp" tools:src="@tools:sample/avatars[3]" android:id="@+id/coverImageView"
+                android:clickable="false"/>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:clickable="false">
+            <TextView
+                    android:text="Manga Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/titleTextView"
+                    android:paddingLeft="15dp" android:textSize="18sp" android:textStyle="bold"
+                    android:clickable="false"/>
+            <TextView
+                    android:text="Manga Source"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/sourceTextView"
+                    android:paddingLeft="15dp" android:clickable="false"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:gravity="right|center_vertical"
+                android:clickable="false">
+            <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:background="@color/design_default_color_primary"
+                    android:padding="5dp" android:clickable="false" android:id="@+id/updateAvailableFrameLayout">
+
+                <TextView
+                        android:text="new"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/updateAvailableTextView"
+                        android:textColor="@color/white" android:clickable="false"/>
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
