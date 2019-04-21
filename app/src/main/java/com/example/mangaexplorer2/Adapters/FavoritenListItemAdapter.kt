@@ -24,10 +24,11 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val favoriteItem: FavoriteItem = favoriteItems[position]
-        holder.coverImageView.contentDescription = favoriteItem.coverImage
+        holder.coverImageView.setImageDrawable(favoriteItem.coverImage)
         holder.sourceTextView.text = favoriteItem.mangaSource
         holder.titleTextView.text =favoriteItem.mangaTitle
         holder.updateAvailableFrameLayout.visibility = if(favoriteItem.hasNewChapter) View.VISIBLE else View.INVISIBLE
+        holder.listDivider.visibility = if(favoriteItems.size -1 === position) View.GONE else View.VISIBLE
     }
 
     override fun getItemCount(): Int = favoriteItems.size
@@ -37,5 +38,6 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
         val titleTextView: TextView = mView.findViewById(R.id.titleTextView)
         val sourceTextView: TextView = mView.findViewById(R.id.sourceTextView)
         val updateAvailableFrameLayout: FrameLayout = mView.findViewById(R.id.updateAvailableFrameLayout)
+        val listDivider: View = mView.findViewById(R.id.listDivider)
     }
 }

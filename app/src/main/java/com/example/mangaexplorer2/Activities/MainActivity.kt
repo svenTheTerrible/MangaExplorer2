@@ -1,11 +1,14 @@
 package com.example.mangaexplorer2.Activities
 
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
@@ -41,36 +44,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val favoriteList: List<FavoriteItem> = listOf(
             FavoriteItem(
                 mangaTitle = "manga1",
-                coverImage = "image",
+                coverImage =  resources.getDrawable(R.drawable.abc_btn_check_material),
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga2",
-                coverImage = "image",
+                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
                 hasNewChapter = true,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga3",
-                coverImage = "image",
+                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga4",
-                coverImage = "image",
+                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
                 hasNewChapter = true,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga5",
-                coverImage = "image",
+                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             )
         )
-
         favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteList)
     }

@@ -1,3 +1,5 @@
 package com.example.mangaexplorer2.Models
 
-class FavoriteItem(public val mangaTitle: String, public val mangaSource:String, public val coverImage: String, public val hasNewChapter: Boolean){}
+import android.graphics.drawable.Drawable
+
+class FavoriteItem(public val mangaTitle: String, public val mangaSource:String, public val coverImage: Drawable, public val hasNewChapter: Boolean){}
