@@ -28,7 +28,7 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
         holder.sourceTextView.text = favoriteItem.mangaSource
         holder.titleTextView.text =favoriteItem.mangaTitle
         holder.updateAvailableFrameLayout.visibility = if(favoriteItem.hasNewChapter) View.VISIBLE else View.INVISIBLE
-        holder.listDivider.visibility = if(favoriteItems.size -1 === position) View.GONE else View.VISIBLE
+        holder.listDivider.visibility = if(favoriteItems.size -1 == position) View.GONE else View.VISIBLE
     }
 
     override fun getItemCount(): Int = favoriteItems.size
