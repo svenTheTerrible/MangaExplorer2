@@ -2,7 +2,7 @@ package com.example.mangaexplorer2.MangaSources
 
 class MangaTown():MangaSource() {
 
-    override val sourceName: String = "mangatown"
+    override val sourceName: MangaSourceName = MangaSourceName.MANGATOWN
 
     override fun getChapters(): List<ChapterResult> {
         return listOf<ChapterResult>(
@@ -13,7 +13,7 @@ class MangaTown():MangaSource() {
         )
     }
 
-    public override fun getSearchResult(): List<SearchResult>{
+    override fun getSearchResult(): List<SearchResult>{
         return listOf<SearchResult>(
             SearchResult(
                 name= "test2",

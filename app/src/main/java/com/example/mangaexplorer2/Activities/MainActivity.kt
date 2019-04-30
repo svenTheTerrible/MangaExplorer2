@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
+import com.example.mangaexplorer2.MangaSources.MangaSourceName
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -108,7 +109,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // Handle the camera action
             }
             R.id.mangasource_mangatown -> {
-                startActivity(Intent(this, SearchActivity::class.java))
+                val intent = Intent(this, SearchActivity::class.java)
+                intent.putExtra("sourceName", MangaSourceName.MANGATOWN)
+                startActivity(intent)
             }
         }
 

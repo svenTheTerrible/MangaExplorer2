@@ -2,29 +2,32 @@ package com.example.mangaexplorer2.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
+import android.view.inputmethod.EditorInfo
+import com.example.mangaexplorer2.MangaSources.MangaSource
+import com.example.mangaexplorer2.MangaSources.SourceRegister
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_search_actitiy.*
 import kotlinx.android.synthetic.main.app_bar_search_actitiy.*
+import kotlinx.android.synthetic.main.content_search_actitiy.*
 
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+    private var searchText: String = ""
+    private  var mangaSource?: MangaSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_actitiy)
         setSupportActionBar(toolbar)
-
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-
+        setMangaSource()
         val toggle = ActionBarDrawerToggle(
             this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
@@ -32,6 +35,27 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+
+        searchEditText.addTextChangedListener(object: TextWatcher{
+            override fun afterTextChanged(p0: Editable?) {
+                searchText = p0.toString();
+            }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+        })
+
+        searchEditText.setOnEditorActionListener{v, actionId, event->
+            if(actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
+                runSearch(searchText)
+                true
+            }else{
+                false
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -70,5 +94,15 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun setMangaSource(): Unit{
+        val extras = intent.extras?: throw Error("extras is missing")
+        val sourceName = extras.getString("sourceName") ?: throw Error("sourceName is missing")
+        mangaSource = SourceRegister().getSource(sourceName)
+    }
+
+    private fun runSearch(searchterm: String): Unit{
+        print(searchterm)
     }
 }
