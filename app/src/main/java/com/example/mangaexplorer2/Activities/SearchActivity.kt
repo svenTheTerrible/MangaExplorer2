@@ -21,12 +21,13 @@ import kotlinx.android.synthetic.main.content_search_actitiy.*
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var searchText: String = ""
-    private  var mangaSource?: MangaSource
+    private var mangaSource: MangaSource = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_actitiy)
         setSupportActionBar(toolbar)
+
         setMangaSource()
         val toggle = ActionBarDrawerToggle(
             this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
@@ -49,7 +50,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         })
 
         searchEditText.setOnEditorActionListener{v, actionId, event->
-            if(actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
+            if(actionId == EditorInfo.IME_ACTION_NEXT){
                 runSearch(searchText)
                 true
             }else{
@@ -98,11 +99,15 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun setMangaSource(): Unit{
         val extras = intent.extras?: throw Error("extras is missing")
-        val sourceName = extras.getString("sourceName") ?: throw Error("sourceName is missing")
-        mangaSource = SourceRegister().getSource(sourceName)
+        mangaSource =
+            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")test
     }
 
     private fun runSearch(searchterm: String): Unit{
+        val mangaSource = mangaSource?: throw Error("mangaSource needs to be defined when running search")
+
+        val searchResult = mangaSource.getSearchResult(searchterm)
+
         print(searchterm)
     }
 }
