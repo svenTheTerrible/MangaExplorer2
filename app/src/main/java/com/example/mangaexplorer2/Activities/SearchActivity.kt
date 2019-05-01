@@ -12,6 +12,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
 import com.example.mangaexplorer2.MangaSources.MangaSource
+import com.example.mangaexplorer2.MangaSources.SearchResult
 import com.example.mangaexplorer2.MangaSources.SourceRegister
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_search_actitiy.*
@@ -21,7 +22,8 @@ import kotlinx.android.synthetic.main.content_search_actitiy.*
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var searchText: String = ""
-    private var mangaSource: MangaSource = null
+    private var mangaSource: MangaSource? = null
+    private var searchResult: SearchResult? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,14 +102,15 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setMangaSource(): Unit{
         val extras = intent.extras?: throw Error("extras is missing")
         mangaSource =
-            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")test
+            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")
     }
 
-    private fun runSearch(searchterm: String): Unit{
+    private fun runSearch(searchterm: String){
         val mangaSource = mangaSource?: throw Error("mangaSource needs to be defined when running search")
+        mangaSource.getSearchResult(searchterm, {searchResult->
 
-        val searchResult = mangaSource.getSearchResult(searchterm)
-
-        print(searchterm)
+            //todo check if in main thread and if so, directly update recycler view
+            print(searchResult)
+        })
     }
 }
