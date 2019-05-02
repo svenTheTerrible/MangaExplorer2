@@ -15,7 +15,8 @@
         <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="715dp" tools:layout_editor_absoluteY="8dp" tools:layout_editor_absoluteX="8dp">
+                android:layout_height="match_parent" tools:layout_editor_absoluteY="8dp"
+                tools:layout_editor_absoluteX="8dp">
             <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -26,10 +27,17 @@
                     android:text="Keine Suchergebnisse"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/emptySearchText" android:gravity="center"/>
+            <ProgressBar
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/searchProgressBar" android:visibility="gone"/>
             <ScrollView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 <android.support.v7.widget.RecyclerView
+                        tools:listitem="@layout/search_result_list_item"
+                        android:clickable="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:id="@+id/searchResultRecyclerView"/>
             </ScrollView>

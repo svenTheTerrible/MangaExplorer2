@@ -6,11 +6,15 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.LinearLayout
+import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaSource
 import com.example.mangaexplorer2.MangaSources.SearchResult
 import com.example.mangaexplorer2.MangaSources.SourceRegister
@@ -51,7 +55,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         })
 
-        searchEditText.setOnEditorActionListener{v, actionId, event->
+        searchEditText.setOnEditorActionListener{_, actionId, _->
             if(actionId == EditorInfo.IME_ACTION_NEXT){
                 runSearch(searchText)
                 true
@@ -105,12 +109,28 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")
     }
 
+    private fun updateSearchResults(searchResults: List<SearchResult>, isLoading: Boolean):Unit{
+        this@SearchActivity.runOnUiThread{
+            searchProgressBar.visibility = if(isLoading){
+                View.VISIBLE
+            }else{
+                View.GONE
+            }
+            emptySearchText.visibility = if(searchResults.size > 0 || isLoading){
+                View.GONE
+            }else{
+                View.VISIBLE
+            }
+            searchResultRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults)
+        }
+    }
+
     private fun runSearch(searchterm: String){
+        updateSearchResults(emptyList(),true)
         val mangaSource = mangaSource?: throw Error("mangaSource needs to be defined when running search")
         mangaSource.getSearchResult(searchterm, {searchResult->
-
-            //todo check if in main thread and if so, directly update recycler view
-            print(searchResult)
+            updateSearchResults(searchResult, false)
         })
     }
 }
