@@ -4,7 +4,7 @@
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
              tools:context=".FavoritenListItem" android:clickable="true"
->
+             android:id="@+id/resultContainer">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout

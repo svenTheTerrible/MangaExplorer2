@@ -122,8 +122,16 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 View.VISIBLE
             }
             searchResultRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
-            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults)
+            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults, ::onClickSearchResult)
         }
+    }
+
+    private fun onClickSearchResult(searchResult: SearchResult): Unit {
+
+
+
+        
+        print(searchResult)
     }
 
     private fun runSearch(searchterm: String){
