@@ -127,11 +127,10 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun onClickSearchResult(searchResult: SearchResult): Unit {
-
-
-
-        
-        print(searchResult)
+        val intent = Intent(this, ChapterActivity::class.java)
+        intent.putExtra("mangaSource", mangaSource)
+        intent.putExtra("searchResult", searchResult)
+        startActivity(intent)
     }
 
     private fun runSearch(searchterm: String){

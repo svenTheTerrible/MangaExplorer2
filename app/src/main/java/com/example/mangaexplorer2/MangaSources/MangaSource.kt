@@ -5,7 +5,7 @@ import java.io.Serializable
 
 class ChapterResult(val name: String, url: String)
 
-class SearchResult(val name: String, url: String, coverUrl: String)
+class SearchResult(val name: String, url: String, coverUrl: String): Serializable
 
 enum class MangaSourceName{
     MANGATOWN
