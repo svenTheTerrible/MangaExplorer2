@@ -34,7 +34,7 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_chapter"/>
+    <include layout="@layout/content_chapter" android:id="@+id/chapterRecyclerView"/>
 
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"

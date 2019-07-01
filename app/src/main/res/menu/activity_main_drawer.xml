@@ -6,7 +6,7 @@
     <group android:checkableBehavior="single">
         <item
                 android:id="@+id/nav_favorites"
-                android:icon="@drawable/ic_menu_camera"
+                android:icon="@drawable/star"
                 android:title="Favorites"/>
     </group>
 
@@ -14,7 +14,7 @@
         <menu>
             <item
                     android:id="@+id/mangasource_mangatown"
-                    android:icon="@drawable/ic_menu_share"
+                    android:icon="@drawable/globe"
                     android:title="Mangatown"/>
         </menu>
     </item>

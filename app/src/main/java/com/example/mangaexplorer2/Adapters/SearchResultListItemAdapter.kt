@@ -26,7 +26,6 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
         val searchResult: SearchResult = searchResults[position]
         // holder.searchResultImage.setImageDrawable()
         holder.mangaTitle.text = searchResult.name
-        holder.listDivider.visibility = if(searchResults.size -1 == position) View.GONE else View.VISIBLE
 
         holder.resultContainer.setOnClickListener({
             onClick(searchResult)
@@ -38,7 +37,6 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
         //val searchResultImage: ImageView = mView.findViewById(R.id.searchResultImage)
         val mangaTitle: TextView = mView.findViewById(R.id.mangaTitle)
-        val listDivider: View = mView.findViewById(R.id.listDivider)
         val resultContainer: FrameLayout = mView.findViewById(R.id.resultContainer)
     }
 }
