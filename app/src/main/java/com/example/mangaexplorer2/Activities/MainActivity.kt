@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
-import com.example.mangaexplorer2.MangaSources.MangaSourceName
 import com.example.mangaexplorer2.MangaSources.MangaTown
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,7 +24,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(chapterToolbar)
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, toolbar,
+            this, drawer_layout, chapterToolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )

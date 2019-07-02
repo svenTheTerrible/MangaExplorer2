@@ -6,13 +6,22 @@ class MangaTown() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MANGATOWN
 
-    override fun getChapters(): List<ChapterResult> {
-        return listOf(
-            ChapterResult(
-                name = "test",
-                url = "aslalala"
+    override fun getChapters(chapterMenuUrl: String, callback:(chapters: List<ChapterResult>)->Unit): Unit {
+        AsyncWrapper{
+            val doc = Jsoup.connect(chapterMenuUrl).get()
+            callback(
+                doc.select(".chapter_list").select("a").map{chapterLink->
+                    ChapterResult(
+                        name = chapterLink.text(),
+                        url = repairUrl(chapterLink.attr("href"))
+                    )
+                }
             )
-        )
+        }.execute()
+    }
+
+    private fun repairUrl(url: String): String {
+        return "https:" + url
     }
 
     override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>)-> Unit): Unit {
@@ -23,7 +32,7 @@ class MangaTown() : MangaSource() {
                     SearchResult(
                         name = resultItem.attr("title"),
                         coverUrl = resultItem.getElementsByTag("img").attr("src"),
-                        url = resultItem.attr("href")
+                        url = repairUrl(resultItem.attr("href"))
                     )
                 }
             )

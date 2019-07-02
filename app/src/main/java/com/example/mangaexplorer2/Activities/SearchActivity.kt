@@ -17,7 +17,6 @@ import android.widget.LinearLayout
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaSource
 import com.example.mangaexplorer2.MangaSources.SearchResult
-import com.example.mangaexplorer2.MangaSources.SourceRegister
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_search_actitiy.*
 import kotlinx.android.synthetic.main.app_bar_search_actitiy.*
@@ -32,11 +31,11 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_actitiy)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(chapterToolbar)
 
         setMangaSource()
         val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this, drawer_layout, chapterToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
