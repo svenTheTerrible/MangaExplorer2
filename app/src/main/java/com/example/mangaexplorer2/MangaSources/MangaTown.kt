@@ -15,7 +15,7 @@ class MangaTown() : MangaSource() {
                         name = chapterLink.text(),
                         url = repairUrl(chapterLink.attr("href"))
                     )
-                }
+                }.reversed()
             )
         }.execute()
     }
@@ -38,4 +38,18 @@ class MangaTown() : MangaSource() {
             )
         }.execute()
     }
+
+    override fun getImageUrl(pageUrl: String, callback: (imageUrl: String?) -> Unit) {
+        AsyncWrapper{
+            val mobileUrl = pageUrl.replace("https://www", "https://m")
+            val doc = Jsoup.connect(mobileUrl).get()
+            val results  = doc.select("#image").map { resultItem ->
+                resultItem.attr("src")
+            }
+            callback(
+             if(results.size ==1) results[0] else null
+            )
+        }.execute()
+    }
+
 }

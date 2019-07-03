@@ -1,8 +1,10 @@
 package com.example.mangaexplorer2.Activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.view.View
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Adapters.ChapterResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.ChapterResult
@@ -44,20 +46,19 @@ class ChapterActivity : AppCompatActivity() {
 
     private fun updateChapterResults(chapters: List<ChapterResult>, isLoading: Boolean):Unit{
         this@ChapterActivity.runOnUiThread{
-            //todo loading spinnger magic here
+            chapterProgressBar.visibility = if(isLoading) View.VISIBLE else View.GONE
             chapterRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
             chapterRecyclerView.adapter = ChapterResultListItemAdapter(chapters, ::onClickChapterResult)
         }
     }
 
     private fun onClickChapterResult(chapterResult: ChapterResult): Unit {
-        print(chapterResult)
-        /*
-        val intent = Intent(this, ChapterActivity::class.java)
+        val intent = Intent(this, PageReaderActivity::class.java)
         intent.putExtra("mangaSource", mangaSource)
         intent.putExtra("searchResult", searchResult)
+        intent.putExtra("chapterResult", chapterResult)
         startActivity(intent)
-        */
+
     }
 
 

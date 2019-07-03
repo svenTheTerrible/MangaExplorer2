@@ -3,7 +3,7 @@ package com.example.mangaexplorer2.MangaSources
 import android.os.AsyncTask
 import java.io.Serializable
 
-class ChapterResult(val name: String, val url: String)
+class ChapterResult(val name: String, val url: String): Serializable
 
 class SearchResult(val name: String, val url: String, val coverUrl: String): Serializable
 
@@ -15,6 +15,7 @@ abstract class MangaSource: Serializable{
     abstract val sourceName: MangaSourceName;
     abstract fun getChapters(chapterMenuUrl: String, callback:(chapters: List<ChapterResult>) -> Unit): Unit
     abstract fun getSearchResult(searchterm: String, callback:(searchResults: List<SearchResult>)-> Unit): Unit
+    abstract fun getImageUrl(pageUrl: String, callback:(imageUrl: String?)-> Unit): Unit
 }
 
 class AsyncWrapper(val asyncTask: ()-> Unit ) : AsyncTask<Void, Void, Void>() {
