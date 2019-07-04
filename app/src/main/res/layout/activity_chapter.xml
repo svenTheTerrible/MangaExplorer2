@@ -8,7 +8,6 @@
         android:fitsSystemWindows="true"
         tools:context=".Activities.ChapterActivity">
     <android.support.design.widget.AppBarLayout
-            android:id="@+id/app_bar"
             android:fitsSystemWindows="true"
             android:layout_height="@dimen/app_bar_height"
             android:layout_width="match_parent"
@@ -24,13 +23,19 @@
                 app:contentScrim="@color/colorPrimary" app:titleEnabled="true"
         >
 
+            <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" tools:srcCompat="@tools:sample/backgrounds/scenic[0]"
+                    android:id="@+id/appBarMangaCover" android:scaleType="centerCrop"
+                    android:tint="@color/black"/>
             <android.support.v7.widget.Toolbar
                     android:id="@+id/chapterToolbar"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_width="match_parent"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay" app:title="test"
-                    android:background="@color/colorPrimary"/>
+                    app:titleTextColor="@color/black"
+            />
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>

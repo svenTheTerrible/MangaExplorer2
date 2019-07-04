@@ -1,12 +1,16 @@
 package com.example.mangaexplorer2.Activities
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.widget.LinearLayout
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.Adapters.ChapterResultListItemAdapter
+import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.MangaSources.ChapterResult
 import com.example.mangaexplorer2.MangaSources.MangaSource
 import com.example.mangaexplorer2.MangaSources.SearchResult
@@ -25,6 +29,17 @@ class ChapterActivity : AppCompatActivity() {
         unpackExtras()
 
         chapterToolbar.title = searchResult?.name
+
+
+        searchResult?.coverUrl
+
+        GlideApp.with(this)
+            .load(Uri.parse(searchResult?.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(appBarMangaCover)
+
+
+
         loadChapters()
     }
 
