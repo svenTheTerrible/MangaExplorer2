@@ -6,11 +6,11 @@ class MangaTown() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MANGATOWN
 
-    override fun getChapters(chapterMenuUrl: String, callback:(chapters: List<ChapterResult>)->Unit): Unit {
-        AsyncWrapper{
+    override fun getChapters(chapterMenuUrl: String, callback: (chapters: List<ChapterResult>) -> Unit): Unit {
+        AsyncWrapper {
             val doc = Jsoup.connect(chapterMenuUrl).get()
             callback(
-                doc.select(".chapter_list").select("a").map{chapterLink->
+                doc.select(".chapter_list").select("a").map { chapterLink ->
                     ChapterResult(
                         name = chapterLink.text(),
                         url = repairUrl(chapterLink.attr("href"))
@@ -24,8 +24,8 @@ class MangaTown() : MangaSource() {
         return "https:" + url
     }
 
-    override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>)-> Unit): Unit {
-        AsyncWrapper{
+    override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>) -> Unit): Unit {
+        AsyncWrapper {
             val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").get()
             callback(
                 doc.select(".manga_cover").map { resultItem ->
@@ -39,15 +39,35 @@ class MangaTown() : MangaSource() {
         }.execute()
     }
 
-    override fun getImageUrl(pageUrl: String, callback: (imageUrl: String?) -> Unit) {
-        AsyncWrapper{
+    private fun getChapterNameFromUrl(pageUrl: String): String? {
+        val regex = """^https:\/\/m\.mangatown\.com\/manga\/.*?(c\d*)""".toRegex()
+        val matchResult = regex.find(pageUrl)
+        val groupValues = matchResult?.groupValues
+        return  if(groupValues != null && groupValues.size >1) groupValues[1] else null
+    }
+
+
+    override fun getPageResult(pageUrl: String, callback: (pageResult: PageResult) -> Unit) {
+        AsyncWrapper {
             val mobileUrl = pageUrl.replace("https://www", "https://m")
             val doc = Jsoup.connect(mobileUrl).get()
-            val results  = doc.select("#image").map { resultItem ->
+            val test = doc.html()
+            val results = doc.select("#image").map { resultItem ->
                 resultItem.attr("src")
             }
+            val pageAmount = doc.select(".ch-select").select("option").size
+            val selectedPageListElement = doc.select(".ch-select").select("option").find{ element -> element.hasAttr("selected")}
+            val pageCount = selectedPageListElement?.text()?.toInt()
+            val nextPageElementA = doc.select("#viewer").select("a")
+            val nextPage = if(nextPageElementA.size >0) nextPageElementA[0].attr("href") else null
             callback(
-             if(results.size ==1) results[0] else null
+                PageResult(
+                    imageUrl = if (results.size == 1) results[0] else null,
+                    chapterName = getChapterNameFromUrl(mobileUrl),
+                    pageAmount = pageAmount,
+                    pageCount = pageCount,
+                    nextPageUrl = nextPage
+                )
             )
         }.execute()
     }
