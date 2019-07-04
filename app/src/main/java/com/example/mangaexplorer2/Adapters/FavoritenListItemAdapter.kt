@@ -1,4 +1,5 @@
 package com.example.mangaexplorer2.Adapters
+import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +7,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
+import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.R
 
@@ -24,7 +28,12 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val favoriteItem: FavoriteItem = favoriteItems[position]
-        holder.coverImageView.setImageDrawable(favoriteItem.coverImage)
+
+        GlideApp.with(holder.mView.context)
+            .load(Uri.parse(favoriteItem.coverImage)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .transition(withCrossFade())
+            .into(holder.coverImageView)
+
         holder.sourceTextView.text = favoriteItem.mangaSource
         holder.titleTextView.text =favoriteItem.mangaTitle
         holder.updateAvailableFrameLayout.visibility = if(favoriteItem.hasNewChapter) View.VISIBLE else View.INVISIBLE

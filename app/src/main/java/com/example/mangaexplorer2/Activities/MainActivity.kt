@@ -45,31 +45,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val favoriteList: List<FavoriteItem> = listOf(
             FavoriteItem(
                 mangaTitle = "manga1",
-                coverImage =  resources.getDrawable(R.drawable.abc_btn_check_material),
+                coverImage =  "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga2",
-                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
+                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
                 hasNewChapter = true,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga3",
-                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
+                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga4",
-                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
+                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
                 hasNewChapter = true,
                 mangaSource = "mangahere"
             ),
             FavoriteItem(
                 mangaTitle = "manga5",
-                coverImage = resources.getDrawable(R.drawable.abc_btn_check_material),
+                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
                 hasNewChapter = false,
                 mangaSource = "mangahere"
             )

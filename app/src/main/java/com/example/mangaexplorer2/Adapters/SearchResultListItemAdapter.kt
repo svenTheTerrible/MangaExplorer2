@@ -1,4 +1,5 @@
 package com.example.mangaexplorer2.Adapters
+import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +7,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.MangaSources.SearchResult
 import com.example.mangaexplorer2.R
 
@@ -24,9 +28,11 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val searchResult: SearchResult = searchResults[position]
-        // holder.searchResultImage.setImageDrawable()
+        GlideApp.with(holder.mView.context)
+            .load(Uri.parse(searchResult.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(holder.searchResultImage)
         holder.mangaTitle.text = searchResult.name
-
         holder.resultContainer.setOnClickListener({
             onClick(searchResult)
         })
@@ -35,7 +41,7 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
     override fun getItemCount(): Int = searchResults.size
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        //val searchResultImage: ImageView = mView.findViewById(R.id.searchResultImage)
+        val searchResultImage: ImageView = mView.findViewById(R.id.searchResultImage)
         val mangaTitle: TextView = mView.findViewById(R.id.mangaTitle)
         val resultContainer: FrameLayout = mView.findViewById(R.id.resultContainer)
     }
