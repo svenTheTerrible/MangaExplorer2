@@ -51,7 +51,6 @@ class MangaTown() : MangaSource() {
         AsyncWrapper {
             val mobileUrl = pageUrl.replace("https://www", "https://m")
             val doc = Jsoup.connect(mobileUrl).get()
-            val test = doc.html()
             val results = doc.select("#image").map { resultItem ->
                 resultItem.attr("src")
             }

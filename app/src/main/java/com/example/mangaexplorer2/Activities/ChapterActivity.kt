@@ -38,8 +38,6 @@ class ChapterActivity : AppCompatActivity() {
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(appBarMangaCover)
 
-
-
         loadChapters()
     }
 
