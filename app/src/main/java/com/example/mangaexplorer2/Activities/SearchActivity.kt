@@ -14,6 +14,7 @@ import android.view.KeyEvent.ACTION_DOWN
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaSource
@@ -43,7 +44,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         nav_view.setNavigationItemSelectedListener(this)
 
-        searchEditText.addTextChangedListener(object: TextWatcher{
+        searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 searchText = p0.toString();
             }
@@ -55,11 +56,18 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         })
 
-        searchEditText.setOnEditorActionListener{_, actionId, keyEvent->
-            if(keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == ACTION_DOWN){
+        searchEditText.setOnEditorActionListener { _, actionId, keyEvent ->
+
+            val enterKeydown =
+                keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == ACTION_DOWN
+
+            val virtualKeyBoardEnter =
+                actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_SEND
+
+            if (enterKeydown || virtualKeyBoardEnter) {
                 runSearch(searchText)
                 true
-            }else{
+            } else {
                 false
             }
         }
@@ -103,22 +111,23 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         return true
     }
 
-    private fun setMangaSource(): Unit{
-        val extras = intent.extras?: throw Error("extras is missing")
+    private fun setMangaSource(): Unit {
+        val extras = intent.extras ?: throw Error("extras is missing")
         mangaSource =
-            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")
+            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
+                ?: throw Error("Serializable is no MangaSource")
     }
 
-    private fun updateSearchResults(searchResults: List<SearchResult>, isLoading: Boolean):Unit{
-        this@SearchActivity.runOnUiThread{
-            searchProgressBar.visibility = if(isLoading){
+    private fun updateSearchResults(searchResults: List<SearchResult>, isLoading: Boolean): Unit {
+        this@SearchActivity.runOnUiThread {
+            searchProgressBar.visibility = if (isLoading) {
                 View.VISIBLE
-            }else{
+            } else {
                 View.GONE
             }
-            emptySearchText.visibility = if(searchResults.size > 0 || isLoading){
+            emptySearchText.visibility = if (searchResults.size > 0 || isLoading) {
                 View.GONE
-            }else{
+            } else {
                 View.VISIBLE
             }
             searchResultRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
@@ -133,10 +142,10 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         startActivity(intent)
     }
 
-    private fun runSearch(searchterm: String){
-        updateSearchResults(emptyList(),true)
-        val mangaSource = mangaSource?: throw Error("mangaSource needs to be defined when running search")
-        mangaSource.getSearchResult(searchterm, {searchResult->
+    private fun runSearch(searchterm: String) {
+        updateSearchResults(emptyList(), true)
+        val mangaSource = mangaSource ?: throw Error("mangaSource needs to be defined when running search")
+        mangaSource.getSearchResult(searchterm, { searchResult ->
             updateSearchResults(searchResult, false)
         })
     }
