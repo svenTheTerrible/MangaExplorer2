@@ -9,10 +9,11 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
+import android.view.KeyEvent.ACTION_DOWN
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaSource
@@ -54,8 +55,8 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         })
 
-        searchEditText.setOnEditorActionListener{_, actionId, _->
-            if(actionId == EditorInfo.IME_ACTION_NEXT){
+        searchEditText.setOnEditorActionListener{_, actionId, keyEvent->
+            if(keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == ACTION_DOWN){
                 runSearch(searchText)
                 true
             }else{

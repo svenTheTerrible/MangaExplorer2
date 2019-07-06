@@ -15,6 +15,9 @@ import com.example.mangaexplorer2.MangaSources.SearchResult
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_page_reader.*
 
+
+
+
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private var mangaSource: MangaSource? = null
     private var searchResult: SearchResult? = null
@@ -24,6 +27,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     private var currentPageUrl: String? = null
     private var currentPageResult: PageResult? = null
+    private var lastPageRegister: Map<String, String> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,12 +70,21 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun loadNextPage(){
-        currentPageUrl = currentPageResult?.nextPageUrl
+        val lastPageUrl = currentPageUrl
+        val nextPageUrl = currentPageResult?.nextPageUrl
+        if(lastPageUrl != null && nextPageUrl != null){
+            lastPageRegister = lastPageRegister.plus(Pair(nextPageUrl, lastPageUrl))
+        }
+        currentPageUrl = nextPageUrl
         loadCurrentPageUrl()
     }
 
     private fun loadLastPage() {
-        //todo implement me!
+        val lastPageUrl  = lastPageRegister.get(currentPageUrl)
+        if(lastPageUrl != null){
+            currentPageUrl = lastPageUrl
+            loadCurrentPageUrl()
+        }
     }
 
     // GESTURE STUFF DOWN HERE
