@@ -107,7 +107,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-        if(e1 != null && e2 != null && velocityX > 100){
+        if(e1 != null && e2 != null){
             val xDiff = Math.abs(e1.x - e2.x)
             val yDiff = Math.abs(e1.y - e2.y)
             if(xDiff > yDiff){
