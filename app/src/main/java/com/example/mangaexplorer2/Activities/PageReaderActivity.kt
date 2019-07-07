@@ -1,5 +1,6 @@
 package com.example.mangaexplorer2.Activities
 
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -16,8 +17,6 @@ import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_page_reader.*
 
 
-
-
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private var mangaSource: MangaSource? = null
     private var searchResult: SearchResult? = null
@@ -32,6 +31,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page_reader)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         unpackExtras()
         currentPageUrl = chapterResult?.url
         supportActionBar?.hide()
