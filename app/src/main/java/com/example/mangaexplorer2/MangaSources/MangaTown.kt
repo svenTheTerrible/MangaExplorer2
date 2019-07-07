@@ -47,8 +47,9 @@ class MangaTown() : MangaSource() {
     }
 
 
-    override fun getPageResult(pageUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(startPageUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
+            val pageUrl = startPageUrl.replace("http://", "https://")
             val mobileUrl = pageUrl.replace("https://www", "https://m")
             val doc = Jsoup.connect(mobileUrl).get()
             val results = doc.select("#image").map { resultItem ->
@@ -59,6 +60,8 @@ class MangaTown() : MangaSource() {
             val pageCount = selectedPageListElement?.text()?.toInt()
             val nextPageElementA = doc.select("#viewer").select("a")
             val nextPage = if(nextPageElementA.size >0) nextPageElementA[0].attr("href") else null
+
+            //todo fix chapterName for alle pages after first one
             callback(
                 PageResult(
                     imageUrl = if (results.size == 1) results[0] else null,
