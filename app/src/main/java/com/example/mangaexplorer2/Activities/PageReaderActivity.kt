@@ -4,7 +4,9 @@ import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.view.GestureDetectorCompat
+import android.support.v7.app.AlertDialog
 import android.view.GestureDetector
 import android.view.MotionEvent
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -13,7 +15,9 @@ import com.example.mangaexplorer2.MangaSources.ChapterResult
 import com.example.mangaexplorer2.MangaSources.MangaSource
 import com.example.mangaexplorer2.MangaSources.PageResult
 import com.example.mangaexplorer2.MangaSources.SearchResult
+import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.R
+import com.example.mangaexplorer2.Utility.FavoritenDB
 import kotlinx.android.synthetic.main.activity_page_reader.*
 
 
@@ -28,9 +32,12 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private var currentPageResult: PageResult? = null
     private var lastPageRegister: Map<String, String> = mutableMapOf()
 
+    private var favoriteDB: FavoritenDB? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page_reader)
+        favoriteDB = FavoritenDB(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         unpackExtras()
         currentPageUrl = chapterResult?.url
@@ -76,7 +83,27 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
             lastPageRegister = lastPageRegister.plus(Pair(nextPageUrl, lastPageUrl))
         }
         currentPageUrl = nextPageUrl
+        updateReadingProgress()
         loadCurrentPageUrl()
+    }
+
+    private fun updateReadingProgress(force: Boolean = false){
+        val mangaSourceName = mangaSource?.sourceName.toString()
+        val mangaTitle = searchResult?.name
+        val coverUrl = searchResult?.coverUrl
+        val chapterMenuUrl = searchResult?.url
+        val currentPageUrl = currentPageUrl
+        val db = favoriteDB
+        if(db != null && mangaTitle != null && coverUrl != null && chapterMenuUrl != null && currentPageUrl != null && (force || db.mangaIsFavorite(mangaTitle, mangaSourceName))){
+            db.saveReadingProgress(FavoriteItem(
+                mangaTitle = mangaTitle,
+                mangaSource = mangaSourceName,
+                currentPageUrl = currentPageUrl,
+                chapterMenuUrl = chapterMenuUrl,
+                hasNewChapter = false,
+                coverImageUrl = coverUrl
+            ))
+        }
     }
 
     private fun loadLastPage() {
@@ -118,7 +145,6 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
                     }else{
                         //to left
                         loadNextPage()
-
                     }
                 }
             }
@@ -130,7 +156,40 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         return true
     }
 
-    override fun onLongPress(e: MotionEvent?) {}
+    override fun onLongPress(e: MotionEvent?) {
+
+        val mangaTitle = searchResult!!.name
+        val mangaSource = mangaSource!!.sourceName
+
+
+        val isFavorite = favoriteDB!!.mangaIsFavorite(mangaTitle, mangaSource.toString())
+
+
+        val message = if(isFavorite) "Unfavorite manga?" else "Make manga favorite?"
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Favorization")
+        builder.setMessage(message)
+
+        builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+            val view = window.decorView.rootView
+
+            if(isFavorite){
+                favoriteDB!!.removeReadingProgress(mangaSource.toString(), mangaTitle)
+                Snackbar.make(view, "Manga removed from favorites", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            }else{
+                updateReadingProgress(true)
+                Snackbar.make(view, "Manga is now favorite", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            }
+        }
+
+        builder.setNegativeButton(android.R.string.no) { dialog, which ->
+        }
+        builder.show()
+
+    }
 
     override fun onDoubleTap(e: MotionEvent?): Boolean {
         return true

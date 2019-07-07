@@ -47,10 +47,10 @@ class MangaTown() : MangaSource() {
     }
 
 
-    override fun getPageResult(startPageUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
-            val pageUrl = startPageUrl.replace("http://", "https://")
-            val mobileUrl = pageUrl.replace("https://www", "https://m")
+            val savePageUrl = pageUrl.replace("http://", "https://")
+            val mobileUrl = savePageUrl.replace("https://www", "https://m")
             val doc = Jsoup.connect(mobileUrl).get()
             val results = doc.select("#image").map { resultItem ->
                 resultItem.attr("src")

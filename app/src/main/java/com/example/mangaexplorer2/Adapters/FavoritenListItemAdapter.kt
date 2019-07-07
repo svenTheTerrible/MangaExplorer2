@@ -1,5 +1,6 @@
 package com.example.mangaexplorer2.Adapters
 import android.net.Uri
+import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +19,7 @@ import com.example.mangaexplorer2.R
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  */
-class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : RecyclerView.Adapter<FavoritenListItemAdapter.ViewHolder>() {
+class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, private val onClick:(FavoriteItem)-> Unit) : RecyclerView.Adapter<FavoritenListItemAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -30,13 +31,16 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
         val favoriteItem: FavoriteItem = favoriteItems[position]
 
         GlideApp.with(holder.mView.context)
-            .load(Uri.parse(favoriteItem.coverImage)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(Uri.parse(favoriteItem.coverImageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(withCrossFade())
             .into(holder.coverImageView)
 
         holder.sourceTextView.text = favoriteItem.mangaSource
         holder.titleTextView.text =favoriteItem.mangaTitle
         holder.updateAvailableFrameLayout.visibility = if(favoriteItem.hasNewChapter) View.VISIBLE else View.INVISIBLE
+        holder.favoriteCardView.setOnClickListener{
+            onClick(favoriteItem)
+        }
     }
 
     override fun getItemCount(): Int = favoriteItems.size
@@ -46,5 +50,6 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>) : 
         val titleTextView: TextView = mView.findViewById(R.id.titleTextView)
         val sourceTextView: TextView = mView.findViewById(R.id.sourceTextView)
         val updateAvailableFrameLayout: FrameLayout = mView.findViewById(R.id.updateAvailableFrameLayout)
+        val favoriteCardView: CardView = mView.findViewById(R.id.favoriteCardView)
     }
 }

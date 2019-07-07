@@ -13,13 +13,17 @@ import android.view.MenuItem
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
-import com.example.mangaexplorer2.MangaSources.MangaTown
+import com.example.mangaexplorer2.MangaSources.*
 import com.example.mangaexplorer2.R
+import com.example.mangaexplorer2.Utility.FavoritenDB
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+    private var favoriteItems: List<FavoriteItem> = emptyList()
+    private var favoritenDB: FavoritenDB? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,43 +43,54 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
+        favoritenDB = FavoritenDB(applicationContext)
+        updateFavoriteList()
+    }
 
-        //onclick listener for favorites
+    fun updateFavoriteList():Unit {
+        val db = favoritenDB
+        if(db != null){
+            favoriteItems = db.getFavorites()
+            favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+            favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems)
+        }
 
-        val favoriteList: List<FavoriteItem> = listOf(
-            FavoriteItem(
-                mangaTitle = "manga1",
-                coverImage =  "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
-                hasNewChapter = false,
-                mangaSource = "mangahere"
-            ),
-            FavoriteItem(
-                mangaTitle = "manga2",
-                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
-                hasNewChapter = true,
-                mangaSource = "mangahere"
-            ),
-            FavoriteItem(
-                mangaTitle = "manga3",
-                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
-                hasNewChapter = false,
-                mangaSource = "mangahere"
-            ),
-            FavoriteItem(
-                mangaTitle = "manga4",
-                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
-                hasNewChapter = true,
-                mangaSource = "mangahere"
-            ),
-            FavoriteItem(
-                mangaTitle = "manga5",
-                coverImage = "http://fmcdn.mangatown.com/store/manga/44/ocover.jpg?token=df2821dcc887dc24681fb4295f4570c8fee8f19c&ttl=1562353200&v=1548837389",
-                hasNewChapter = false,
-                mangaSource = "mangahere"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateFavoriteList()
+    }
+
+    fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
+
+        //todo schauen, ob chapterName wichtig ist
+
+        val intent = Intent(this, PageReaderActivity::class.java)
+        intent.putExtra("mangaSource", getMangaSource(favoriteItem.mangaSource))
+        intent.putExtra(
+            "searchResult", SearchResult(
+                name = favoriteItem.mangaTitle,
+                url = favoriteItem.chapterMenuUrl,
+                coverUrl = favoriteItem.coverImageUrl
             )
         )
-        favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
-        favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteList)
+        intent.putExtra(
+            "chapterResult", ChapterResult(
+                name = "",
+                url = favoriteItem.currentPageUrl
+            )
+        )
+        startActivity(intent)
+    }
+
+    fun getMangaSource(mangaSourceName: String): MangaSource {
+        when (mangaSourceName) {
+            MangaSourceName.MANGATOWN.toString() -> return MangaTown()
+            else -> {
+                throw Error("Could not find mangasource " + mangaSourceName)
+            }
+        }
     }
 
     override fun onBackPressed() {
