@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GestureDetectorCompat
+import android.support.v4.widget.CircularProgressDrawable
 import android.support.v7.app.AlertDialog
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -47,41 +48,48 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         loadCurrentPageUrl()
     }
 
-    private fun unpackExtras(): Unit{
-        val extras = intent.extras?: throw Error("extras is missing")
+    private fun unpackExtras(): Unit {
+        val extras = intent.extras ?: throw Error("extras is missing")
         mangaSource =
             (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
                 ?: throw Error("Serializable is no MangaSource")
-        searchResult = (extras.getSerializable("searchResult")?: throw Error("searchResult is missing")) as? SearchResult
-            ?: throw Error("Serializable is no SearchResult")
-        chapterResult = (extras.getSerializable("chapterResult")?: throw Error("chapterResult is missing")) as? ChapterResult
-            ?: throw Error("Serializable is no ChapterResult")
+        searchResult =
+            (extras.getSerializable("searchResult") ?: throw Error("searchResult is missing")) as? SearchResult
+                ?: throw Error("Serializable is no SearchResult")
+        chapterResult =
+            (extras.getSerializable("chapterResult") ?: throw Error("chapterResult is missing")) as? ChapterResult
+                ?: throw Error("Serializable is no ChapterResult")
     }
 
-    private fun loadCurrentPageUrl(){
+    private fun loadCurrentPageUrl() {
         val pageUrl = currentPageUrl
-        if(pageUrl != null){
-            mangaSource.getPageResult(pageUrl) { pageResult->
+        if (pageUrl != null) {
+            mangaSource.getPageResult(pageUrl) { pageResult ->
                 updateImageView(pageResult)
             }
         }
     }
 
-    private fun updateImageView(pageResult: PageResult):Unit{
+    private fun updateImageView(pageResult: PageResult): Unit {
         this.currentPageResult = pageResult
-        this@PageReaderActivity.runOnUiThread{
+        this@PageReaderActivity.runOnUiThread {
+            val circularProgressDrawable = CircularProgressDrawable(this)
+            circularProgressDrawable.strokeWidth = 5f
+            circularProgressDrawable.centerRadius = 30f
+            circularProgressDrawable.start()
             chapterNameTextView.text = pageResult.chapterName
             pageCountTextView.text = pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
-         GlideApp.with(this)
-             .load(Uri.parse(pageResult.imageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
-             .into(pageReaderImageView)
+            GlideApp.with(this)
+                .load(Uri.parse(pageResult.imageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+                .placeholder(circularProgressDrawable)
+                .into(pageReaderImageView)
         }
     }
 
-    private fun loadNextPage(){
+    private fun loadNextPage() {
         val lastPageUrl = currentPageUrl
         val nextPageUrl = currentPageResult?.nextPageUrl
-        if(lastPageUrl != null && nextPageUrl != null){
+        if (lastPageUrl != null && nextPageUrl != null) {
             lastPageRegister = lastPageRegister.plus(Pair(nextPageUrl, lastPageUrl))
         }
         currentPageUrl = nextPageUrl
@@ -89,23 +97,29 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         loadCurrentPageUrl()
     }
 
-    private fun updateReadingProgress(force: Boolean = false){
+    private fun updateReadingProgress(force: Boolean = false) {
         val currentUrl = currentPageUrl
-        if(currentUrl != null && (force || favoriteDB.mangaIsFavorite(searchResult.name, mangaSource.sourceName.toString()))){
-            favoriteDB.saveReadingProgress(FavoriteItem(
-                mangaTitle = searchResult.name,
-                mangaSource = mangaSource.sourceName.toString(),
-                currentPageUrl = currentUrl,
-                chapterMenuUrl = searchResult.url,
-                hasNewChapter = false,
-                coverImageUrl = searchResult.coverUrl
+        if (currentUrl != null && (force || favoriteDB.mangaIsFavorite(
+                searchResult.name,
+                mangaSource.sourceName.toString()
             ))
+        ) {
+            favoriteDB.saveReadingProgress(
+                FavoriteItem(
+                    mangaTitle = searchResult.name,
+                    mangaSource = mangaSource.sourceName.toString(),
+                    currentPageUrl = currentUrl,
+                    chapterMenuUrl = searchResult.url,
+                    hasNewChapter = false,
+                    coverImageUrl = searchResult.coverUrl
+                )
+            )
         }
     }
 
     private fun loadLastPage() {
-        val lastPageUrl  = lastPageRegister.get(currentPageUrl)
-        if(lastPageUrl != null){
+        val lastPageUrl = lastPageRegister.get(currentPageUrl)
+        if (lastPageUrl != null) {
             currentPageUrl = lastPageUrl
             loadCurrentPageUrl()
         }
@@ -131,15 +145,15 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-        if(e1 != null && e2 != null){
+        if (e1 != null && e2 != null) {
             val xDiff = Math.abs(e1.x - e2.x)
             val yDiff = Math.abs(e1.y - e2.y)
-            if(xDiff > yDiff){
-                if(xDiff > 100){
-                    if(e1.x > e2.x){
+            if (xDiff > yDiff) {
+                if (xDiff > 100) {
+                    if (e1.x > e2.x) {
                         //to right
                         loadLastPage()
-                    }else{
+                    } else {
                         //to left
                         loadNextPage()
                     }
@@ -156,7 +170,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     override fun onLongPress(e: MotionEvent?) {
         val isFavorite = favoriteDB.mangaIsFavorite(mangaSource.sourceName.toString(), searchResult.name)
 
-        val message = if(isFavorite) "Unfavorite manga?" else "Make manga favorite?"
+        val message = if (isFavorite) "Unfavorite manga?" else "Make manga favorite?"
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Favorization")
@@ -165,11 +179,11 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         builder.setPositiveButton(android.R.string.yes) { _, _ ->
             val view = window.decorView.rootView
 
-            if(isFavorite){
+            if (isFavorite) {
                 favoriteDB.removeReadingProgress(mangaSource.toString(), searchResult.name)
                 Snackbar.make(view, "Manga removed from favorites", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
-            }else{
+            } else {
                 updateReadingProgress(true)
                 Snackbar.make(view, "Manga is now favorite", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
