@@ -17,8 +17,8 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
-import com.example.mangaexplorer2.MangaSources.MangaSource
-import com.example.mangaexplorer2.MangaSources.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_search_actitiy.*
 import kotlinx.android.synthetic.main.app_bar_search_actitiy.*
@@ -27,8 +27,7 @@ import kotlinx.android.synthetic.main.content_search_actitiy.*
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var searchText: String = ""
-    private var mangaSource: MangaSource? = null
-    private var searchResult: SearchResult? = null
+    private lateinit var mangaSource: MangaSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +98,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        //todo add way to switch between mangasources, best is to keep ative search
         when (item.itemId) {
             R.id.nav_favorites -> {
                 startActivity(Intent(this, MainActivity::class.java))
@@ -144,7 +144,6 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun runSearch(searchterm: String) {
         updateSearchResults(emptyList(), true)
-        val mangaSource = mangaSource ?: throw Error("mangaSource needs to be defined when running search")
         mangaSource.getSearchResult(searchterm, { searchResult ->
             updateSearchResults(searchResult, false)
         })

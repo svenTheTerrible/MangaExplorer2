@@ -14,6 +14,10 @@ import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
 import com.example.mangaexplorer2.MangaSources.*
+import com.example.mangaexplorer2.MangaSources.util.ChapterResult
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.MangaSources.util.MangaSourceName
+import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
 import kotlinx.android.synthetic.main.activity_main.*
@@ -23,7 +27,7 @@ import kotlinx.android.synthetic.main.content_main.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var favoriteItems: List<FavoriteItem> = emptyList()
-    private var favoritenDB: FavoritenDB? = null
+    private lateinit var favoritenDB: FavoritenDB
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,14 +51,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
-    fun updateFavoriteList():Unit {
-        val db = favoritenDB
-        if(db != null){
-            favoriteItems = db.getFavorites()
-            favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
-            favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems)
-        }
-
+    fun updateFavoriteList(): Unit {
+        favoriteItems = favoritenDB.getFavorites()
+        favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+        favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems)
     }
 
     override fun onResume() {

@@ -10,7 +10,7 @@ import android.widget.TextView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
 
 

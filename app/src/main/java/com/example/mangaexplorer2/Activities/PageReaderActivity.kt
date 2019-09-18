@@ -11,10 +11,10 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.ChapterResult
-import com.example.mangaexplorer2.MangaSources.MangaSource
-import com.example.mangaexplorer2.MangaSources.PageResult
-import com.example.mangaexplorer2.MangaSources.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.ChapterResult
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.MangaSources.util.PageResult
+import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
@@ -22,17 +22,16 @@ import kotlinx.android.synthetic.main.activity_page_reader.*
 
 
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
-    private var mangaSource: MangaSource? = null
-    private var searchResult: SearchResult? = null
-    private var chapterResult: ChapterResult? = null
-    private var gDetector: GestureDetectorCompat? = null
-
+    private lateinit var mangaSource: MangaSource
+    private lateinit var searchResult: SearchResult
+    private lateinit var chapterResult: ChapterResult
+    private lateinit var gDetector: GestureDetectorCompat
 
     private var currentPageUrl: String? = null
     private var currentPageResult: PageResult? = null
     private var lastPageRegister: Map<String, String> = mutableMapOf()
 
-    private var favoriteDB: FavoritenDB? = null
+    private lateinit var favoriteDB: FavoritenDB
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +39,10 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         favoriteDB = FavoritenDB(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         unpackExtras()
-        currentPageUrl = chapterResult?.url
+        currentPageUrl = chapterResult.url
         supportActionBar?.hide()
         this.gDetector = GestureDetectorCompat(this, this)
-        gDetector?.setOnDoubleTapListener(this)
+        gDetector.setOnDoubleTapListener(this)
 
         loadCurrentPageUrl()
     }
@@ -51,15 +50,18 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private fun unpackExtras(): Unit{
         val extras = intent.extras?: throw Error("extras is missing")
         mangaSource =
-            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")
-        searchResult = (extras.getSerializable("searchResult")?: throw Error("searchResult is missing")) as? SearchResult ?: throw Error("Serializable is no SearchResult")
-        chapterResult = (extras.getSerializable("chapterResult")?: throw Error("chapterResult is missing")) as? ChapterResult ?: throw Error("Serializable is no ChapterResult")
+            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
+                ?: throw Error("Serializable is no MangaSource")
+        searchResult = (extras.getSerializable("searchResult")?: throw Error("searchResult is missing")) as? SearchResult
+            ?: throw Error("Serializable is no SearchResult")
+        chapterResult = (extras.getSerializable("chapterResult")?: throw Error("chapterResult is missing")) as? ChapterResult
+            ?: throw Error("Serializable is no ChapterResult")
     }
 
     private fun loadCurrentPageUrl(){
         val pageUrl = currentPageUrl
         if(pageUrl != null){
-            mangaSource?.getPageResult(pageUrl) { pageResult->
+            mangaSource.getPageResult(pageUrl) { pageResult->
                 updateImageView(pageResult)
             }
         }
@@ -69,7 +71,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         this.currentPageResult = pageResult
         this@PageReaderActivity.runOnUiThread{
             chapterNameTextView.text = pageResult.chapterName
-            pageCountTextView.text = pageResult.pageCount?.toString() + "/" + pageResult.pageAmount?.toString()
+            pageCountTextView.text = pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
          GlideApp.with(this)
              .load(Uri.parse(pageResult.imageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
              .into(pageReaderImageView)
@@ -88,20 +90,15 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun updateReadingProgress(force: Boolean = false){
-        val mangaSourceName = mangaSource?.sourceName.toString()
-        val mangaTitle = searchResult?.name
-        val coverUrl = searchResult?.coverUrl
-        val chapterMenuUrl = searchResult?.url
-        val currentPageUrl = currentPageUrl
-        val db = favoriteDB
-        if(db != null && mangaTitle != null && coverUrl != null && chapterMenuUrl != null && currentPageUrl != null && (force || db.mangaIsFavorite(mangaTitle, mangaSourceName))){
-            db.saveReadingProgress(FavoriteItem(
-                mangaTitle = mangaTitle,
-                mangaSource = mangaSourceName,
-                currentPageUrl = currentPageUrl,
-                chapterMenuUrl = chapterMenuUrl,
+        val currentUrl = currentPageUrl
+        if(currentUrl != null && (force || favoriteDB.mangaIsFavorite(searchResult.name, mangaSource.sourceName.toString()))){
+            favoriteDB.saveReadingProgress(FavoriteItem(
+                mangaTitle = searchResult.name,
+                mangaSource = mangaSource.sourceName.toString(),
+                currentPageUrl = currentUrl,
+                chapterMenuUrl = searchResult.url,
                 hasNewChapter = false,
-                coverImageUrl = coverUrl
+                coverImageUrl = searchResult.coverUrl
             ))
         }
     }
@@ -117,7 +114,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     // GESTURE STUFF DOWN HERE
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        this.gDetector?.onTouchEvent(event)
+        this.gDetector.onTouchEvent(event)
         // Be sure to call the superclass implementation
         return super.onTouchEvent(event)
     }
@@ -157,13 +154,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     override fun onLongPress(e: MotionEvent?) {
-
-        val mangaTitle = searchResult!!.name
-        val mangaSource = mangaSource!!.sourceName
-
-
-        val isFavorite = favoriteDB!!.mangaIsFavorite(mangaTitle, mangaSource.toString())
-
+        val isFavorite = favoriteDB.mangaIsFavorite(mangaSource.sourceName.toString(), searchResult.name)
 
         val message = if(isFavorite) "Unfavorite manga?" else "Make manga favorite?"
 
@@ -171,11 +162,11 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         builder.setTitle("Favorization")
         builder.setMessage(message)
 
-        builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+        builder.setPositiveButton(android.R.string.yes) { _, _ ->
             val view = window.decorView.rootView
 
             if(isFavorite){
-                favoriteDB!!.removeReadingProgress(mangaSource.toString(), mangaTitle)
+                favoriteDB.removeReadingProgress(mangaSource.toString(), searchResult.name)
                 Snackbar.make(view, "Manga removed from favorites", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             }else{
@@ -185,7 +176,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
             }
         }
 
-        builder.setNegativeButton(android.R.string.no) { dialog, which ->
+        builder.setNegativeButton(android.R.string.no) { _, _ ->
         }
         builder.show()
 

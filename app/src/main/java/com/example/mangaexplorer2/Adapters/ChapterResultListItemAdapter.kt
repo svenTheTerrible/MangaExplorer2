@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import com.example.mangaexplorer2.MangaSources.ChapterResult
+import com.example.mangaexplorer2.MangaSources.util.ChapterResult
 import com.example.mangaexplorer2.R
 
 

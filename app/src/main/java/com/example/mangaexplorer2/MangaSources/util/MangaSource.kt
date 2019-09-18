@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.MangaSources
+package com.example.mangaexplorer2.MangaSources.util
 
 import android.os.AsyncTask
 import java.io.Serializable

@@ -11,16 +11,16 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.Adapters.ChapterResultListItemAdapter
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.ChapterResult
-import com.example.mangaexplorer2.MangaSources.MangaSource
-import com.example.mangaexplorer2.MangaSources.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.ChapterResult
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
 import kotlinx.android.synthetic.main.activity_chapter.*
 import kotlinx.android.synthetic.main.content_chapter.*
 
 class ChapterActivity : AppCompatActivity() {
-    private var mangaSource: MangaSource? = null;
-    private var searchResult: SearchResult? = null;
+    private lateinit var mangaSource: MangaSource;
+    private lateinit var searchResult: SearchResult;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,34 +28,22 @@ class ChapterActivity : AppCompatActivity() {
         setSupportActionBar(chapterToolbar)
         unpackExtras()
 
-        chapterToolbar.title = searchResult?.name
-
-
-        searchResult?.coverUrl
+        chapterToolbar.title = searchResult.name
 
         GlideApp.with(this)
-            .load(Uri.parse(searchResult?.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(Uri.parse(searchResult.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(appBarMangaCover)
 
         loadChapters()
     }
 
-    private fun loadChapters(): Unit{
-        val manga = mangaSource
-        val search = searchResult
-
-        if(manga != null && search != null){
-            updateChapterResults(emptyList(), true)
-            manga.getChapters(search.url, {chapters ->
-                updateChapterResults(chapters, false)
-            })
-        }else{
-            throw Error("mangaSource and searchResult need to be defined for chapterActivity to load chapters");
+    private fun loadChapters(): Unit {
+        updateChapterResults(emptyList(), true)
+        mangaSource.getChapters(searchResult.url) { chapters ->
+            updateChapterResults(chapters, false)
         }
     }
-
-
 
     private fun updateChapterResults(chapters: List<ChapterResult>, isLoading: Boolean):Unit{
         this@ChapterActivity.runOnUiThread{
@@ -79,8 +67,10 @@ class ChapterActivity : AppCompatActivity() {
     private fun unpackExtras(): Unit{
         val extras = intent.extras?: throw Error("extras is missing")
         mangaSource =
-            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource ?: throw Error("Serializable is no MangaSource")
-        searchResult = (extras.getSerializable("searchResult")?: throw Error("searchResult is missing")) as? SearchResult ?: throw Error("Serializable is no SearchResult")
+            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
+                ?: throw Error("Serializable is no MangaSource")
+        searchResult = (extras.getSerializable("searchResult")?: throw Error("searchResult is missing")) as? SearchResult
+            ?: throw Error("Serializable is no SearchResult")
     }
 
 }

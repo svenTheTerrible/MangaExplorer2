@@ -1,5 +1,6 @@
 package com.example.mangaexplorer2.MangaSources
 
+import com.example.mangaexplorer2.MangaSources.util.*
 import org.jsoup.Jsoup
 
 class MangaTown() : MangaSource() {
@@ -56,10 +57,11 @@ class MangaTown() : MangaSource() {
                 resultItem.attr("src")
             }
             val pageAmount = doc.select(".ch-select").select("option").size
-            val selectedPageListElement = doc.select(".ch-select").select("option").find{ element -> element.hasAttr("selected")}
+            val selectedPageListElement =
+                doc.select(".ch-select").select("option").find { element -> element.hasAttr("selected") }
             val pageCount = selectedPageListElement?.text()?.toInt()
             val nextPageElementA = doc.select("#viewer").select("a")
-            val nextPage = if(nextPageElementA.size >0) nextPageElementA[0].attr("href") else null
+            val nextPage = if (nextPageElementA.size > 0) nextPageElementA[0].attr("href") else null
 
             //todo fix chapterName for alle pages after first one
             callback(
