@@ -45,7 +45,7 @@ class FavoritenDB(context: Context) {
         }
     }
 
-    fun mangaIsFavorite(mangaTitle: String, mangaSource: String): Boolean {
+    fun mangaIsFavorite(mangaSource: String, mangaTitle: String): Boolean {
         if (db != null) {
             val cursor = db.rawQuery(
                 """
