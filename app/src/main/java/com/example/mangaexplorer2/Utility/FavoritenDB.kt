@@ -23,7 +23,7 @@ class FavoritenDB(context: Context) {
 
     fun saveReadingProgress(favoriteItem: FavoriteItem): Unit {
         if (db != null) {
-            if (mangaIsFavorite(favoriteItem.mangaTitle,favoriteItem.mangaSource)) {
+            if (mangaIsFavorite(favoriteItem.mangaSource,favoriteItem.mangaTitle)) {
                 db.execSQL(
                     """
                 UPDATE favorites SET mangaTitle="${favoriteItem.mangaTitle}", mangaSource="${favoriteItem.mangaSource}", coverImageUrl="${favoriteItem.coverImageUrl}", chapterMenuUrl="${favoriteItem.chapterMenuUrl}", currentPageUrl="${favoriteItem.currentPageUrl}", newChapterAvailable=0 WHERE mangaTitle = "${favoriteItem.mangaTitle}" AND mangaSource = "${favoriteItem.mangaSource}"
@@ -52,10 +52,7 @@ class FavoritenDB(context: Context) {
                 SELECT idFavorite FROM favorites WHERE mangaTitle = "$mangaTitle" AND mangaSource = "$mangaSource"
             """.trimIndent(), null
             )
-
-            val test = cursor.count
-
-            return cursor.count == 1
+            return cursor.count >= 1
         }
         return false
     }

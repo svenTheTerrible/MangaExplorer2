@@ -8,11 +8,21 @@
         tools:context=".Activities.PageReaderActivity" android:background="@color/greyBackground"
         android:id="@+id/readerFrameLayout">
 
+    <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar" android:elevation="1dp" android:layout_gravity="center"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"/>
+    <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:visibility="gone" android:id="@+id/multiImageView"
+            tools:listitem="@layout/multi_image_list_item" android:longClickable="true"
+            android:splitMotionEvents="false"/>
     <ImageView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/pageReaderImageView" android:visibility="visible"
-            android:scaleType="fitXY"/>
+            android:layout_height="match_parent" tools:srcCompat="@tools:sample/avatars"
+            android:id="@+id/singleImageView" android:visibility="gone" android:adjustViewBounds="false"
+            android:cropToPadding="false" android:scaleType="fitXY"/>
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">

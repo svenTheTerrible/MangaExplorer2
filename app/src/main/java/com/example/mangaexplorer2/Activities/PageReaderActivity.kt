@@ -1,6 +1,8 @@
 package com.example.mangaexplorer2.Activities
 
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -8,9 +10,16 @@ import android.support.design.widget.Snackbar
 import android.support.v4.view.GestureDetectorCompat
 import android.support.v4.widget.CircularProgressDrawable
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
+import android.widget.LinearLayout
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
 import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.MangaSources.util.ChapterResult
 import com.example.mangaexplorer2.MangaSources.util.MangaSource
@@ -22,7 +31,7 @@ import com.example.mangaexplorer2.Utility.FavoritenDB
 import kotlinx.android.synthetic.main.activity_page_reader.*
 
 
-class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var mangaSource: MangaSource
     private lateinit var searchResult: SearchResult
     private lateinit var chapterResult: ChapterResult
@@ -42,8 +51,15 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         unpackExtras()
         currentPageUrl = chapterResult.url
         supportActionBar?.hide()
+
+        multiImageView.addOnItemTouchListener(object: RecyclerView.SimpleOnItemTouchListener(){
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                gDetector.onTouchEvent(e)
+                return super.onInterceptTouchEvent(rv, e)
+            }
+        })
+
         this.gDetector = GestureDetectorCompat(this, this)
-        gDetector.setOnDoubleTapListener(this)
 
         loadCurrentPageUrl()
     }
@@ -64,6 +80,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private fun loadCurrentPageUrl() {
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
+            progressBar.visibility = View.VISIBLE
             mangaSource.getPageResult(pageUrl) { pageResult ->
                 updateImageView(pageResult)
             }
@@ -73,17 +90,61 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private fun updateImageView(pageResult: PageResult): Unit {
         this.currentPageResult = pageResult
         this@PageReaderActivity.runOnUiThread {
-            val circularProgressDrawable = CircularProgressDrawable(this)
-            circularProgressDrawable.strokeWidth = 5f
-            circularProgressDrawable.centerRadius = 30f
-            circularProgressDrawable.start()
             chapterNameTextView.text = pageResult.chapterName
             pageCountTextView.text = pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
-            GlideApp.with(this)
-                .load(Uri.parse(pageResult.imageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .placeholder(circularProgressDrawable)
-                .into(pageReaderImageView)
+            renderImage(pageResult.imageUrl)
         }
+    }
+
+    private fun renderImage(imageUrl: String?): Unit {
+        val circularProgressDrawable = CircularProgressDrawable(this)
+        circularProgressDrawable.strokeWidth = 5f
+        circularProgressDrawable.centerRadius = 30f
+        circularProgressDrawable.start()
+        GlideApp.with(this)
+            .asBitmap()
+            .skipMemoryCache(true)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(Uri.parse(imageUrl))
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onLoadCleared(p0: Drawable?) {}
+
+                override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
+                    progressBar.visibility = View.GONE
+                    if (p0.height / p0.width > 3) {
+                        renderBitmapList(splitBitmaps(p0))
+                    } else {
+                        renderBitmap(p0)
+                    }
+                }
+            })
+    }
+
+    private fun renderBitmap(bitmap: Bitmap): Unit {
+        multiImageView.visibility = View.GONE
+        singleImageView.visibility = View.VISIBLE
+        singleImageView.setImageBitmap(bitmap);
+    }
+
+    private fun renderBitmapList(bitmaps: List<Bitmap>): Unit {
+
+        multiImageView.visibility = View.VISIBLE
+        singleImageView.visibility = View.GONE
+        multiImageView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+        multiImageView.adapter = MultiImageViewAdapter(bitmaps)
+    }
+
+    private fun splitBitmaps(origBitmap: Bitmap): List<Bitmap> {
+        val bitmaps = mutableListOf<Bitmap>()
+        val origHeight = origBitmap.height
+        var processedHeight = 0
+        while (processedHeight < origHeight) {
+            val restHeight = origHeight - processedHeight
+            val heightToUse = if (restHeight < 200) restHeight else 200
+            bitmaps.add(Bitmap.createBitmap(origBitmap, 0, processedHeight, origBitmap.width, heightToUse))
+            processedHeight += 200
+        }
+        return bitmaps
     }
 
     private fun loadNextPage() {
@@ -100,8 +161,8 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private fun updateReadingProgress(force: Boolean = false) {
         val currentUrl = currentPageUrl
         if (currentUrl != null && (force || favoriteDB.mangaIsFavorite(
-                searchResult.name,
-                mangaSource.sourceName.toString()
+                mangaSource.sourceName.toString(),
+                searchResult.name
             ))
         ) {
             favoriteDB.saveReadingProgress(
@@ -180,7 +241,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
             val view = window.decorView.rootView
 
             if (isFavorite) {
-                favoriteDB.removeReadingProgress(mangaSource.toString(), searchResult.name)
+                favoriteDB.removeReadingProgress(mangaSource.sourceName.toString(), searchResult.name)
                 Snackbar.make(view, "Manga removed from favorites", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             } else {
@@ -194,18 +255,6 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }
         builder.show()
 
-    }
-
-    override fun onDoubleTap(e: MotionEvent?): Boolean {
-        return true
-    }
-
-    override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
-        return true
-    }
-
-    override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-        return true
     }
 
 }
