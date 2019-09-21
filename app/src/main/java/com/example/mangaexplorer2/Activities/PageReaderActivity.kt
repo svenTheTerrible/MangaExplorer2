@@ -111,7 +111,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
                 override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
                     progressBar.visibility = View.GONE
-                    if (p0.height / p0.width > 3) {
+                    if (p0.height / p0.width > 2.5) {
                         renderBitmapList(splitBitmaps(p0))
                     } else {
                         renderBitmap(p0)

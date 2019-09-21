@@ -14,10 +14,7 @@ import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
 import com.example.mangaexplorer2.MangaSources.*
-import com.example.mangaexplorer2.MangaSources.util.ChapterResult
-import com.example.mangaexplorer2.MangaSources.util.MangaSource
-import com.example.mangaexplorer2.MangaSources.util.MangaSourceName
-import com.example.mangaexplorer2.MangaSources.util.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
 import kotlinx.android.synthetic.main.activity_main.*
@@ -67,7 +64,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //todo schauen, ob chapterName wichtig ist
 
         val intent = Intent(this, PageReaderActivity::class.java)
-        intent.putExtra("mangaSource", getMangaSource(favoriteItem.mangaSource))
+        intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
         intent.putExtra(
             "searchResult", SearchResult(
                 name = favoriteItem.mangaTitle,
@@ -82,15 +79,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
         )
         startActivity(intent)
-    }
-
-    fun getMangaSource(mangaSourceName: String): MangaSource {
-        when (mangaSourceName) {
-            MangaSourceName.MANGATOWN.toString() -> return MangaTown()
-            else -> {
-                throw Error("Could not find mangasource " + mangaSourceName)
-            }
-        }
     }
 
     override fun onBackPressed() {
@@ -128,8 +116,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 intent.putExtra("mangaSource", MangaTown())
                 startActivity(intent)
             }
+            R.id.mangasource_tenmanga -> {
+                val intent = Intent(this, SearchActivity::class.java)
+                intent.putExtra("mangaSource", TenManga())
+                startActivity(intent)
+            }
         }
-
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
