@@ -41,7 +41,7 @@ class MangaTown() : MangaSource() {
     }
 
     private fun getChapterNameFromUrl(pageUrl: String): String? {
-        val regex = """^https:\/\/m\.mangatown\.com\/manga\/.*?(c\d*)""".toRegex()
+        val regex = """https:\/\/m\.mangatown\.com\/manga\/.*?\/(c.*?)(\/|${'$'})""".toRegex()
         val matchResult = regex.find(pageUrl)
         val groupValues = matchResult?.groupValues
         return  if(groupValues != null && groupValues.size >1) groupValues[1] else null
