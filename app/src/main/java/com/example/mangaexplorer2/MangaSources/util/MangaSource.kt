@@ -11,7 +11,8 @@ class PageResult(val imageUrl: String?, val pageCount: Int?, val pageAmount: Int
 
 enum class MangaSourceName{
     MANGATOWN,
-    TENMANGA
+    TENMANGA,
+    BATO
 }
 
 abstract class MangaSource: Serializable{
