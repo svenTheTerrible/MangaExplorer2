@@ -44,39 +44,39 @@ class MangaTown() : MangaSource() {
         val regex = """https:\/\/m\.mangatown\.com\/manga\/.*?\/(c.*?)(\/|${'$'})""".toRegex()
         val matchResult = regex.find(pageUrl)
         val groupValues = matchResult?.groupValues
-        return  if(groupValues != null && groupValues.size >1) groupValues[1] else null
+        return if (groupValues != null && groupValues.size > 1) groupValues[1] else null
     }
 
-    private fun toMobileUrl(url: String): String{
+    private fun toMobileUrl(url: String): String {
         val savePageUrl = url.replace("http://", "https://")
         val mobileUrl = savePageUrl.replace("https://www", "https://m")
-        return if(mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
+        return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
     }
 
-    override fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
-            val mobileUrl = toMobileUrl(pageUrl)
-            val doc = Jsoup.connect(mobileUrl).get()
-            val results = doc.select("#image").map { resultItem ->
-                resultItem.attr("src")
-            }
-            val pageAmount = doc.select(".ch-select").select("option").size
-            val selectedPageListElement =
-                doc.select(".ch-select").select("option").find { element -> element.hasAttr("selected") }
-            val pageCount = selectedPageListElement?.text()?.toInt()
-            val nextPageElementA = doc.select("#viewer").select("a")
-            val nextPage = if (nextPageElementA.size > 0) nextPageElementA[0].attr("href") else null
-
-            callback(
-                PageResult(
-                    imageUrl = if (results.size == 1) results[0] else null,
-                    chapterName = getChapterNameFromUrl(mobileUrl),
-                    pageAmount = pageAmount,
-                    pageCount = pageCount,
-                    nextPageUrl = if(nextPage == toMobileUrl(chapterMenuUrl)) null else nextPage
-                )
-            )
+            callback(getPageResultSync(pageUrl, chapterMenuUrl))
         }.execute()
     }
 
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+        val mobileUrl = toMobileUrl(pageUrl)
+        val doc = Jsoup.connect(mobileUrl).get()
+        val results = doc.select("#image").map { resultItem ->
+            resultItem.attr("src")
+        }
+        val pageAmount = doc.select(".ch-select").select("option").size
+        val selectedPageListElement =
+            doc.select(".ch-select").select("option").find { element -> element.hasAttr("selected") }
+        val pageCount = selectedPageListElement?.text()?.toInt()
+        val nextPageElementA = doc.select("#viewer").select("a")
+        val nextPage = if (nextPageElementA.size > 0) nextPageElementA[0].attr("href") else null
+        return PageResult(
+            imageUrl = if (results.size == 1) results[0] else null,
+            chapterName = getChapterNameFromUrl(mobileUrl),
+            pageAmount = pageAmount,
+            pageCount = pageCount,
+            nextPageUrl = if (nextPage == toMobileUrl(chapterMenuUrl)) null else nextPage
+        )
+    }
 }

@@ -28,7 +28,7 @@ class TenManga() : MangaSource() {
             val doc = Jsoup.connect(chapterMenuUrl + "?waring=1").get()
             callback(
                 doc.select(".chapter-box").select("li").map { chapterItem ->
-                   val shortChapter =  chapterItem.select(".short")
+                    val shortChapter = chapterItem.select(".short")
                     ChapterResult(
                         name = shortChapter.select("a").text(),
                         url = shortChapter.select("a").attr("href")
@@ -38,42 +38,28 @@ class TenManga() : MangaSource() {
         }.execute()
     }
 
-    private fun getChapterNameFromUrl(pageUrl: String): String? {
-        val regex = """^https:\/\/m\.mangatown\.com\/manga\/.*?(c\d*)""".toRegex()
-        val matchResult = regex.find(pageUrl)
-        val groupValues = matchResult?.groupValues
-        return  if(groupValues != null && groupValues.size >1) groupValues[1] else null
-    }
-
-
-    override fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
-            val doc = Jsoup.connect(pageUrl).get()
-            val image = doc.selectFirst("#manga_pic_1")
-
-            val selectedPageAndPageAmountText = doc.selectFirst(".pic_download").selectFirst("a").text()
-
-
-            val pageAmountText = selectedPageAndPageAmountText.split(" of ")
-            val pageAmount = if (pageAmountText.size > 1) pageAmountText.get(1).toInt() else 0
-            val pageCount = if(pageAmountText.size >0) pageAmountText.get(0).toInt() else 0
-
-            val nextPageLinks = doc.selectFirst(".read-head").select("a").filter{it-> it.text() == "Next"}
-            val chapterNames = doc.selectFirst(".sl-chap").select("option").filter{it -> it.hasAttr("selected")}
-
-
-            val nextPageUrl = if(nextPageLinks.size >0) nextPageLinks.get(0).attr("href") else "/"
-
-            callback(
-                PageResult(
-                    imageUrl = image.attr("src"),
-                    chapterName = if(chapterNames.size >0) chapterNames.get(0).text() else "",
-                    pageAmount = pageAmount,
-                    pageCount = pageCount,
-                    nextPageUrl = if(nextPageUrl == "/") null else nextPageUrl
-                )
-            )
+            callback(getPageResultSync(pageUrl, chapterMenuUrl))
         }.execute()
     }
 
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+        val doc = Jsoup.connect(pageUrl).get()
+        val image = doc.selectFirst("#manga_pic_1")
+        val selectedPageAndPageAmountText = doc.selectFirst(".pic_download").selectFirst("a").text()
+        val pageAmountText = selectedPageAndPageAmountText.split(" of ")
+        val pageAmount = if (pageAmountText.size > 1) pageAmountText.get(1).toInt() else 0
+        val pageCount = if (pageAmountText.size > 0) pageAmountText.get(0).toInt() else 0
+        val nextPageLinks = doc.selectFirst(".read-head").select("a").filter { it -> it.text() == "Next" }
+        val chapterNames = doc.selectFirst(".sl-chap").select("option").filter { it -> it.hasAttr("selected") }
+        val nextPageUrl = if (nextPageLinks.size > 0) nextPageLinks.get(0).attr("href") else "/"
+        return PageResult(
+            imageUrl = image.attr("src"),
+            chapterName = if (chapterNames.size > 0) chapterNames.get(0).text() else "",
+            pageAmount = pageAmount,
+            pageCount = pageCount,
+            nextPageUrl = if (nextPageUrl == "/") null else nextPageUrl
+        )
+    }
 }

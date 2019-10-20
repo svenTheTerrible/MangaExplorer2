@@ -45,6 +45,17 @@ class FavoritenDB(context: Context) {
         }
     }
 
+    fun setChapterAvailable(isAvailable: Boolean,mangaSource: String, mangaTitle: String): Unit {
+        if (db != null) {
+            val available = if(isAvailable) 1 else 0
+            db.execSQL(
+                """
+                UPDATE favorites SET newChapterAvailable=$available WHERE mangaTitle="$mangaTitle" AND mangaSource="$mangaSource"
+         """.trimIndent()
+            )
+        }
+    }
+
     fun mangaIsFavorite(mangaSource: String, mangaTitle: String): Boolean {
         if (db != null) {
             val cursor = db.rawQuery(

@@ -2,14 +2,16 @@ package com.example.mangaexplorer2.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
+import android.os.Handler
 import android.support.design.widget.NavigationView
+import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
@@ -26,14 +28,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var favoriteItems: List<FavoriteItem> = emptyList()
     private lateinit var favoritenDB: FavoritenDB
 
+    private var isCheckingForUpdates = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(chapterToolbar)
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            if(!isCheckingForUpdates){
+                checkForNewChapters(view)
+            }
         }
 
         val toggle = ActionBarDrawerToggle(
@@ -48,10 +53,58 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
+    private fun checkFavoriteForUpdate(favorite: FavoriteItem): FavoriteItem {
+        val mangaSource = SourceRegister().getSource(favorite.mangaSource)
+        val nextPagePackage = mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
+        return FavoriteItem(
+            favorite.mangaTitle,
+            favorite.mangaSource,
+            favorite.coverImageUrl,
+            favorite.chapterMenuUrl,
+            nextPagePackage.nextPageUrl != null,
+            favorite.currentPageUrl
+        )
+    }
+
+    private fun updateNewChapterFab(): Unit{
+        if(isCheckingForUpdates){
+            fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
+        }else{
+            fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
+        }
+    }
+
+    private fun checkForNewChapters(view: View): Unit {
+        val handler = Handler()
+        isCheckingForUpdates = true
+        updateNewChapterFab()
+        Thread(Runnable {
+            val updatedFavorites = favoriteItems.map {
+                val updatedItem = checkFavoriteForUpdate(it)
+                favoritenDB.setChapterAvailable(
+                    updatedItem.hasNewChapter,
+                    updatedItem.mangaSource,
+                    updatedItem.mangaTitle
+                )
+                updatedItem
+            }
+            handler.post {
+                favoriteItems = updatedFavorites
+                val newChaptersCount = updatedFavorites.filter{ it.hasNewChapter}.size
+                Snackbar.make(view, "$newChaptersCount neue${if(newChaptersCount == 1) "s" else ""} Kapitel verfügbar", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+                isCheckingForUpdates = false
+                updateNewChapterFab()
+                updateFavoriteList()
+            }
+        }).start()
+    }
+
     private fun updateFavoriteList(): Unit {
         favoriteItems = favoritenDB.getFavorites()
         favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
-        favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::onLongClickFavoriteItem)
+        favoritenRecyclerView.adapter =
+            FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::onLongClickFavoriteItem)
     }
 
     override fun onResume() {
@@ -59,10 +112,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
-    private fun onLongClickFavoriteItem(favoriteItem: FavoriteItem): Unit{
+    private fun onLongClickFavoriteItem(favoriteItem: FavoriteItem): Unit {
         val intent = Intent(this, ChapterActivity::class.java)
         intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
-        intent.putExtra("searchResult", SearchResult(favoriteItem.mangaTitle, favoriteItem.chapterMenuUrl, favoriteItem.coverImageUrl))
+        intent.putExtra(
+            "searchResult",
+            SearchResult(favoriteItem.mangaTitle, favoriteItem.chapterMenuUrl, favoriteItem.coverImageUrl)
+        )
         startActivity(intent)
     }
 

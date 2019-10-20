@@ -32,7 +32,7 @@ class Bato() : MangaSource() {
                 doc.select(".main").select(".item").map { chapterItem ->
                     ChapterResult(
                         name = chapterItem.select(".chapt").select("b").text(),
-                        url = toBatoUrl( chapterItem.select(".chapt").attr("href"))
+                        url = toBatoUrl(chapterItem.select(".chapt").attr("href"))
                     )
                 }.reversed()
             )
@@ -43,44 +43,49 @@ class Bato() : MangaSource() {
         return "https://bato.to$incompleteUrl"
     }
 
-    override fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
-            val doc = Jsoup.connect(pageUrl).get()
-            val docString = doc.html()
-            val jsonMatch = """var images = (\{.*?\})""".toRegex().find(docString, 0)
-            val json =
-                (if (jsonMatch != null && jsonMatch.groupValues.size > 1) jsonMatch.groupValues[1] else throw Error("Could not parse pages from javascript"))
-            val pageInfos = json.split(",").map { snippet ->
-                val match = """"(\d*)":"(.*?)"""".toRegex().find(snippet)
-                if (match != null && match.groupValues.size > 2) {
-                    ImageInfo(match.groupValues[1].toInt(), match.groupValues[2])
-                } else {
-                    null
-                }
-            }.filter { imageInfo -> imageInfo != null } as List<ImageInfo>
-
-            val pageNumber = getPageFromUrl(pageUrl)
-
-            val matchingPageInfo = pageInfos.find{ pageInfo -> pageInfo.pageNumber == pageNumber} ?: throw Error("Available pages did not match current pageNumber")
-
-            val nextPageAvailable = pageInfos.find { pageInfo -> pageInfo.pageNumber == pageNumber +1 }
-
-            val nextChapterUrl = toBatoUrl(doc.select(".nav-next").select("a").attr("href"))
-
-            val nextPageUrl = if(nextPageAvailable != null) makePageUrl(pageUrl, pageNumber +1) else nextChapterUrl
-
-            val chapterName = doc.select(".nav-chap").select("option").find { option-> option.hasAttr("selected") }?.text()
-
-            callback(
-                PageResult(
-                    imageUrl = matchingPageInfo.imageUrl,
-                    chapterName = chapterName ?: "",
-                    pageAmount = pageInfos.size,
-                    pageCount = pageNumber,
-                    nextPageUrl = if(nextPageUrl == chapterMenuUrl) null else nextPageUrl
-                )
-            )
+            callback(getPageResultSync(pageUrl, chapterMenuUrl))
         }.execute()
+    }
+
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+        val doc = Jsoup.connect(pageUrl).get()
+        val docString = doc.html()
+        val jsonMatch = """var images = (\{.*?\})""".toRegex().find(docString, 0)
+        val json =
+            (if (jsonMatch != null && jsonMatch.groupValues.size > 1) jsonMatch.groupValues[1] else throw Error("Could not parse pages from javascript"))
+        val pageInfos = json.split(",").map { snippet ->
+            val match = """"(\d*)":"(.*?)"""".toRegex().find(snippet)
+            if (match != null && match.groupValues.size > 2) {
+                ImageInfo(match.groupValues[1].toInt(), match.groupValues[2])
+            } else {
+                null
+            }
+        }.filter { imageInfo -> imageInfo != null } as List<ImageInfo>
+
+        val pageNumber = getPageFromUrl(pageUrl)
+
+        val matchingPageInfo = pageInfos.find { pageInfo -> pageInfo.pageNumber == pageNumber }
+            ?: throw Error("Available pages did not match current pageNumber")
+
+        val nextPageAvailable = pageInfos.find { pageInfo -> pageInfo.pageNumber == pageNumber + 1 }
+
+        val nextChapterUrl = toBatoUrl(doc.select(".nav-next").select("a").attr("href"))
+
+        val nextPageUrl = if (nextPageAvailable != null) makePageUrl(pageUrl, pageNumber + 1) else nextChapterUrl
+
+        val chapterName = doc.select(".nav-chap").select("option").find { option -> option.hasAttr("selected") }?.text()
+
+
+        return PageResult(
+            imageUrl = matchingPageInfo.imageUrl,
+            chapterName = chapterName ?: "",
+            pageAmount = pageInfos.size,
+            pageCount = pageNumber,
+            nextPageUrl = if (nextPageUrl == chapterMenuUrl) null else nextPageUrl
+        )
+
     }
 
     private fun makePageUrl(pageUrl: String, pageNumber: Int): String {
