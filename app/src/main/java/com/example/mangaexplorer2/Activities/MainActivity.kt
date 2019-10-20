@@ -48,10 +48,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
-    fun updateFavoriteList(): Unit {
+    private fun updateFavoriteList(): Unit {
         favoriteItems = favoritenDB.getFavorites()
         favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
-        favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems)
+        favoritenRecyclerView.adapter = FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::onLongClickFavoriteItem)
     }
 
     override fun onResume() {
@@ -59,7 +59,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
-    fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
+    private fun onLongClickFavoriteItem(favoriteItem: FavoriteItem): Unit{
+        val intent = Intent(this, ChapterActivity::class.java)
+        intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
+        intent.putExtra("searchResult", SearchResult(favoriteItem.mangaTitle, favoriteItem.chapterMenuUrl, favoriteItem.coverImageUrl))
+        startActivity(intent)
+    }
+
+    private fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
 
         //todo schauen, ob chapterName wichtig ist
 

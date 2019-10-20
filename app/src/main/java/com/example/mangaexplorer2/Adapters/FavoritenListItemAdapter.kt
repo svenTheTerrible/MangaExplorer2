@@ -19,7 +19,7 @@ import com.example.mangaexplorer2.R
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  */
-class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, private val onClick:(FavoriteItem)-> Unit) : RecyclerView.Adapter<FavoritenListItemAdapter.ViewHolder>() {
+class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, private val onClick:(FavoriteItem)-> Unit,private val onCLonglick:(FavoriteItem)-> Unit) : RecyclerView.Adapter<FavoritenListItemAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -31,7 +31,7 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
         val favoriteItem: FavoriteItem = favoriteItems[position]
 
         GlideApp.with(holder.mView.context)
-            .load(Uri.parse(favoriteItem.coverImageUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(Uri.parse(favoriteItem.coverImageUrl))
             .transition(withCrossFade())
             .into(holder.coverImageView)
 
@@ -41,6 +41,13 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
         holder.favoriteCardView.setOnClickListener{
             onClick(favoriteItem)
         }
+
+        holder.favoriteCardView.setOnLongClickListener(object: View.OnLongClickListener{
+            override fun onLongClick(v: View?): Boolean {
+                onCLonglick(favoriteItem)
+                return true
+            }
+        })
     }
 
     override fun getItemCount(): Int = favoriteItems.size
