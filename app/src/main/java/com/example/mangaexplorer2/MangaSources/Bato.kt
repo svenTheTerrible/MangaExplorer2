@@ -43,7 +43,7 @@ class Bato() : MangaSource() {
         return "https://bato.to$incompleteUrl"
     }
 
-    override fun getPageResult(pageUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
             val doc = Jsoup.connect(pageUrl).get()
             val docString = doc.html()
@@ -74,10 +74,10 @@ class Bato() : MangaSource() {
             callback(
                 PageResult(
                     imageUrl = matchingPageInfo.imageUrl,
-                    chapterName = if(chapterName != null) chapterName else "",
+                    chapterName = chapterName ?: "",
                     pageAmount = pageInfos.size,
                     pageCount = pageNumber,
-                    nextPageUrl = nextPageUrl
+                    nextPageUrl = if(nextPageUrl == chapterMenuUrl) null else nextPageUrl
                 )
             )
         }.execute()

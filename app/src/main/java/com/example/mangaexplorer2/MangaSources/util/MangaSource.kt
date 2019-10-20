@@ -19,7 +19,7 @@ abstract class MangaSource: Serializable{
     abstract val sourceName: MangaSourceName;
     abstract fun getChapters(chapterMenuUrl: String, callback:(chapters: List<ChapterResult>) -> Unit): Unit
     abstract fun getSearchResult(searchterm: String, callback:(searchResults: List<SearchResult>)-> Unit): Unit
-    abstract fun getPageResult(pageUrl: String, callback:(pageResult: PageResult)-> Unit): Unit
+    abstract fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback:(pageResult: PageResult)-> Unit): Unit
 }
 
 class AsyncWrapper(val asyncTask: ()-> Unit ) : AsyncTask<Void, Void, Void>() {

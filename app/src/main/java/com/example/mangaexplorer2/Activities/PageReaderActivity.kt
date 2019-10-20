@@ -81,7 +81,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
             progressBar.visibility = View.VISIBLE
-            mangaSource.getPageResult(pageUrl) { pageResult ->
+            mangaSource.getPageResult(pageUrl, searchResult.url) { pageResult ->
                 updateImageView(pageResult)
             }
         }

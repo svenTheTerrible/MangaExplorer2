@@ -46,7 +46,7 @@ class TenManga() : MangaSource() {
     }
 
 
-    override fun getPageResult(pageUrl: String, callback: (pageResult: PageResult) -> Unit) {
+    override fun getPageResult(pageUrl: String,chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
             val doc = Jsoup.connect(pageUrl).get()
             val image = doc.selectFirst("#manga_pic_1")
@@ -61,13 +61,16 @@ class TenManga() : MangaSource() {
             val nextPageLinks = doc.selectFirst(".read-head").select("a").filter{it-> it.text() == "Next"}
             val chapterNames = doc.selectFirst(".sl-chap").select("option").filter{it -> it.hasAttr("selected")}
 
+
+            val nextPageUrl = if(nextPageLinks.size >0) nextPageLinks.get(0).attr("href") else "/"
+
             callback(
                 PageResult(
                     imageUrl = image.attr("src"),
                     chapterName = if(chapterNames.size >0) chapterNames.get(0).text() else "",
                     pageAmount = pageAmount,
                     pageCount = pageCount,
-                    nextPageUrl = if(nextPageLinks.size >0) nextPageLinks.get(0).attr("href") else ""
+                    nextPageUrl = if(nextPageUrl == "/") null else nextPageUrl
                 )
             )
         }.execute()
