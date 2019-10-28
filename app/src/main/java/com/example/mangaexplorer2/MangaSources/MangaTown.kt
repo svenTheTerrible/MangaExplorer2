@@ -76,7 +76,16 @@ class MangaTown() : MangaSource() {
             chapterName = getChapterNameFromUrl(mobileUrl),
             pageAmount = pageAmount,
             pageCount = pageCount,
-            nextPageUrl = if (nextPage == toMobileUrl(chapterMenuUrl)) null else nextPage
+            nextPageUrl = if (nextPageIsNotValid(nextPage, chapterMenuUrl)) null else nextPage
         )
+    }
+
+    private fun nextPageIsNotValid(nextPage: String?, chapterMenuUrl: String): Boolean{
+        if(nextPage == null){
+            return true
+        }
+        val nextPageIsMenu = nextPage == toMobileUrl(chapterMenuUrl)
+        val nextPageIsBuggedEarlierChapter = nextPage.contains("//ssom.mangatown.com")
+        return nextPageIsMenu || nextPageIsBuggedEarlierChapter
     }
 }
