@@ -69,8 +69,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun updateNewChapterFab(): Unit{
         if(isCheckingForUpdates){
             fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
+            fab.isEnabled = false
         }else{
             fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
+            fab.isEnabled = true
         }
     }
 

@@ -64,6 +64,19 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         loadCurrentPageUrl()
     }
 
+    override fun onPause() {
+        super.onPause()
+        val currentPage = currentPageUrl
+        if(currentPage != null){
+            intent.putExtra(
+                "chapterResult", ChapterResult(
+                    name = "",
+                    url = currentPage
+                )
+            )
+        }
+    }
+
     private fun unpackExtras(): Unit {
         val extras = intent.extras ?: throw Error("extras is missing")
         mangaSource =
