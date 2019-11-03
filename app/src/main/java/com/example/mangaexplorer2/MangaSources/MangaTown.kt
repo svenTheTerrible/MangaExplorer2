@@ -9,16 +9,18 @@ class MangaTown() : MangaSource() {
 
     override fun getChapters(chapterMenuUrl: String, callback: (chapters: List<ChapterResult>) -> Unit): Unit {
         AsyncWrapper {
-            val doc = Jsoup.connect(chapterMenuUrl).get()
-            callback(
-                doc.select(".chapter_list").select("a").map { chapterLink ->
-                    ChapterResult(
-                        name = chapterLink.text(),
-                        url = repairUrl(chapterLink.attr("href"))
-                    )
-                }.reversed()
-            )
+            callback(getChaptersSync(chapterMenuUrl))
         }.execute()
+    }
+
+    private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
+        val doc = Jsoup.connect(chapterMenuUrl).get()
+        return doc.select(".chapter_list").select("a").map { chapterLink ->
+            ChapterResult(
+                name = chapterLink.text(),
+                url = repairUrl(chapterLink.attr("href"))
+            )
+        }.reversed()
     }
 
     private fun repairUrl(url: String): String {
@@ -53,6 +55,12 @@ class MangaTown() : MangaSource() {
         return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
     }
 
+    private fun toDesktopUrl(url: String): String {
+        val savePageUrl = url.replace("http://", "https://")
+        val mobileUrl = savePageUrl.replace("https://m.", "https://www.")
+        return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
+    }
+
     override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
         AsyncWrapper {
             callback(getPageResultSync(pageUrl, chapterMenuUrl))
@@ -76,16 +84,17 @@ class MangaTown() : MangaSource() {
             chapterName = getChapterNameFromUrl(mobileUrl),
             pageAmount = pageAmount,
             pageCount = pageCount,
-            nextPageUrl = if (nextPageIsNotValid(nextPage, chapterMenuUrl)) null else nextPage
+            nextPageUrl = if (pageAmount == pageCount) getNextChapterPageOne(pageUrl, chapterMenuUrl) else nextPage
         )
     }
 
-    private fun nextPageIsNotValid(nextPage: String?, chapterMenuUrl: String): Boolean{
-        if(nextPage == null){
-            return true
+    private fun getNextChapterPageOne(pageUrl: String, chapterMenuUrl: String): String? {
+        val desktopPageUrl = toDesktopUrl(pageUrl)
+        val chapters = getChaptersSync(chapterMenuUrl)
+        val index = chapters.indexOfFirst { desktopPageUrl.contains(it.url)}
+        if(index <0 || index == chapters.size -1){
+            return null
         }
-        val nextPageIsMenu = nextPage == toMobileUrl(chapterMenuUrl)
-        val nextPageIsBuggedEarlierChapter = nextPage.contains("//ssom.mangatown.com")
-        return nextPageIsMenu || nextPageIsBuggedEarlierChapter
+        return chapters[index +1].url
     }
 }
