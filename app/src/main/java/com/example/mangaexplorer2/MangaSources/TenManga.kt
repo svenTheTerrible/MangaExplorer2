@@ -33,7 +33,7 @@ class TenManga() : MangaSource() {
                         name = shortChapter.select("a").text(),
                         url = shortChapter.select("a").attr("href")
                     )
-                }.reversed()
+                }.reversed().dropLast(1)
             )
         }.execute()
     }
