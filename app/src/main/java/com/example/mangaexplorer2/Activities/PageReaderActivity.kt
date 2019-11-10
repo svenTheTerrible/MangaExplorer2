@@ -14,6 +14,9 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
+import com.example.mangaexplorer2.Activities.util.PageBufferList
+import com.example.mangaexplorer2.Activities.util.PageBufferResult
+import com.example.mangaexplorer2.Activities.util.PageLoadingState
 import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
 import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.Models.FavoriteItem

@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.MangaSources.util
+package com.example.mangaexplorer2.Activities.util
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -8,6 +8,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.mangaexplorer2.GlideApp
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.MangaSources.util.PageResult
 import java.lang.Exception
 
 enum class PageLoadingState{
@@ -23,8 +25,9 @@ enum class PageLoadingError{
 
 data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: PageLoadingError?, val pageResult: PageResult?, val imageBitmap: List<Bitmap>)
 
-class PageBuffer(private val context: Context, val mangaSource: MangaSource,  val pageUrl: String, val chapterMenuUrl: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
-    private var loadingStatus: PageLoadingState = PageLoadingState.IS_LOADING
+class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
+    private var loadingStatus: PageLoadingState =
+        PageLoadingState.IS_LOADING
     private var errorType: PageLoadingError? = null
     private var pageResult: PageResult? = null
     private var imageBitmaps: List<Bitmap> = listOf()
@@ -33,8 +36,13 @@ class PageBuffer(private val context: Context, val mangaSource: MangaSource,  va
         Thread(Runnable { loadPage() }).start()
     }
 
-    fun getResult(): PageBufferResult{
-        return PageBufferResult(loadingStatus, errorType, pageResult, imageBitmaps)
+    fun getResult(): PageBufferResult {
+        return PageBufferResult(
+            loadingStatus,
+            errorType,
+            pageResult,
+            imageBitmaps
+        )
     }
 
     private fun loadPage() {

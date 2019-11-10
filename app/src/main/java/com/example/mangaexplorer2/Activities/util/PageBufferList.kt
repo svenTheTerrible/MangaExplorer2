@@ -1,7 +1,8 @@
-package com.example.mangaexplorer2.MangaSources.util
+package com.example.mangaexplorer2.Activities.util
 
 import android.content.Context
 import android.os.Handler
+import com.example.mangaexplorer2.MangaSources.util.MangaSource
 
 class PageBufferList(private val context: Context, private val pageBufferSize: Int) {
     private var pageBufferList = mutableListOf<PageBuffer>()
@@ -12,6 +13,7 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
         mangaSource: MangaSource,
         remainingBufferSize: Int = pageBufferSize
     ) {
+        clearOldBuffers()
         val matchingEntry = pageBufferList.find { it.pageUrl == pageUrl }
 
         fun loadNextPage(nextPageUrl: String?) {
@@ -21,9 +23,10 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
         }
 
         if (matchingEntry == null) {
-            val pageBuffer = PageBuffer(context, mangaSource, pageUrl, chapterMenuUrl) {
-                loadNextPage(it)
-            }
+            val pageBuffer =
+                PageBuffer(System.currentTimeMillis(), context, mangaSource, pageUrl, chapterMenuUrl) {
+                    loadNextPage(it)
+                }
             pageBufferList.add(pageBuffer)
         } else {
             if (remainingBufferSize > 0 && matchingEntry.getResult().pageResult?.nextPageUrl != null) {
@@ -43,5 +46,10 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
                 callback(matchingEntry.getResult())
             }
         }).start()
+    }
+
+    private fun clearOldBuffers(){
+        val threeMinutes = 1000*60*3
+        pageBufferList = pageBufferList.filter { it.getResult().loadingStatus == PageLoadingState.IS_LOADING || System.currentTimeMillis() - it.timestamp < threeMinutes}.toMutableList()
     }
 }
