@@ -2,8 +2,6 @@ package com.example.mangaexplorer2.Activities
 
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -16,15 +14,8 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
-import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.util.ChapterResult
-import com.example.mangaexplorer2.MangaSources.util.MangaSource
-import com.example.mangaexplorer2.MangaSources.util.PageResult
-import com.example.mangaexplorer2.MangaSources.util.SearchResult
+import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
@@ -37,8 +28,9 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private lateinit var chapterResult: ChapterResult
     private lateinit var gDetector: GestureDetectorCompat
 
+    private lateinit var pageBufferList: PageBufferList
     private var currentPageUrl: String? = null
-    private var currentPageResult: PageResult? = null
+    private var currentPageResult: PageBufferResult? = null
     private var lastPageRegister: Map<String, String> = mutableMapOf()
 
     private lateinit var favoriteDB: FavoritenDB
@@ -46,6 +38,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page_reader)
+        pageBufferList = PageBufferList(applicationContext, 3)
         favoriteDB = FavoritenDB(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         unpackExtras()
@@ -77,7 +70,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }
     }
 
-    private fun unpackExtras(): Unit {
+    private fun unpackExtras() {
         val extras = intent.extras ?: throw Error("extras is missing")
         mangaSource =
             (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
@@ -94,52 +87,60 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
             progressBar.visibility = View.VISIBLE
-            mangaSource.getPageResult(pageUrl, searchResult.url) { pageResult ->
-                updateImageView(pageResult)
+            val circularProgressDrawable = CircularProgressDrawable(this)
+            circularProgressDrawable.strokeWidth = 5f
+            circularProgressDrawable.centerRadius = 30f
+            circularProgressDrawable.start()
+            pageBufferList.createPageBuffer(pageUrl, searchResult.url, mangaSource)
+            pageBufferList.getPageResult(pageUrl){
+                updateImageView(it)
             }
         }
     }
 
-    private fun updateImageView(pageResult: PageResult): Unit {
-        this.currentPageResult = pageResult
-        this@PageReaderActivity.runOnUiThread {
-            chapterNameTextView.text = pageResult.chapterName
-            pageCountTextView.text = pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
-            renderImage(pageResult.imageUrl)
+    private fun updateImageView(pageBufferResult: PageBufferResult?) {
+        progressBar.visibility = View.GONE
+        if(pageBufferResult == null){
+            return
+        }
+        val pageResult = pageBufferResult.pageResult
+        when(pageBufferResult.loadingStatus){
+            PageLoadingState.LOADED -> renderSuccessfullImage(pageBufferResult)
+            else -> renderErrorOptions(pageBufferResult)
+        }
+        chapterNameTextView.text = pageResult?.chapterName?: ""
+        pageCountTextView.text = (pageResult?.pageCount?.toString()?: "") + "/" + (pageResult?.pageAmount?.toString()?: "")
+        if(pageBufferResult.imageBitmap.size > 1){
+            renderBitmapList(pageBufferResult.imageBitmap)
+        }else if(pageBufferResult.imageBitmap.size == 1){
+            renderBitmap(pageBufferResult.imageBitmap[0])
+        }
+        pageBufferResult.imageBitmap
+        this.currentPageResult = pageBufferResult
+    }
+
+    private fun renderErrorOptions(pageBufferResult: PageBufferResult){
+        //todo give some options to fix this mess
+    }
+
+    private fun renderSuccessfullImage(pageBufferResult: PageBufferResult){
+        val pageResult = pageBufferResult.pageResult!!
+        chapterNameTextView.text = pageResult.chapterName
+        pageCountTextView.text = pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
+        if(pageBufferResult.imageBitmap.size > 1){
+            renderBitmapList(pageBufferResult.imageBitmap)
+        }else if(pageBufferResult.imageBitmap.size == 1){
+            renderBitmap(pageBufferResult.imageBitmap[0])
         }
     }
 
-    private fun renderImage(imageUrl: String?): Unit {
-        val circularProgressDrawable = CircularProgressDrawable(this)
-        circularProgressDrawable.strokeWidth = 5f
-        circularProgressDrawable.centerRadius = 30f
-        circularProgressDrawable.start()
-        GlideApp.with(this)
-            .asBitmap()
-            .skipMemoryCache(true)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .load(Uri.parse(imageUrl))
-            .into(object : CustomTarget<Bitmap>() {
-                override fun onLoadCleared(p0: Drawable?) {}
-
-                override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
-                    progressBar.visibility = View.GONE
-                    if (p0.height / p0.width > 2.5) {
-                        renderBitmapList(splitBitmaps(p0))
-                    } else {
-                        renderBitmap(p0)
-                    }
-                }
-            })
-    }
-
-    private fun renderBitmap(bitmap: Bitmap): Unit {
+    private fun renderBitmap(bitmap: Bitmap) {
         multiImageView.visibility = View.GONE
         singleImageView.visibility = View.VISIBLE
-        singleImageView.setImageBitmap(bitmap);
+        singleImageView.setImageBitmap(bitmap)
     }
 
-    private fun renderBitmapList(bitmaps: List<Bitmap>): Unit {
+    private fun renderBitmapList(bitmaps: List<Bitmap>) {
 
         multiImageView.visibility = View.VISIBLE
         singleImageView.visibility = View.GONE
@@ -147,22 +148,9 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         multiImageView.adapter = MultiImageViewAdapter(bitmaps)
     }
 
-    private fun splitBitmaps(origBitmap: Bitmap): List<Bitmap> {
-        val bitmaps = mutableListOf<Bitmap>()
-        val origHeight = origBitmap.height
-        var processedHeight = 0
-        while (processedHeight < origHeight) {
-            val restHeight = origHeight - processedHeight
-            val heightToUse = if (restHeight < 200) restHeight else 200
-            bitmaps.add(Bitmap.createBitmap(origBitmap, 0, processedHeight, origBitmap.width, heightToUse))
-            processedHeight += 200
-        }
-        return bitmaps
-    }
-
     private fun loadNextPage() {
         val lastPageUrl = currentPageUrl
-        val nextPageUrl = currentPageResult?.nextPageUrl
+        val nextPageUrl = currentPageResult?.pageResult?.nextPageUrl
         if (lastPageUrl != null && nextPageUrl != null) {
             lastPageRegister = lastPageRegister.plus(Pair(nextPageUrl, lastPageUrl))
         }
@@ -192,7 +180,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun loadLastPage() {
-        val lastPageUrl = lastPageRegister.get(currentPageUrl)
+        val lastPageUrl = lastPageRegister[currentPageUrl]
         if (lastPageUrl != null) {
             currentPageUrl = lastPageUrl
             loadCurrentPageUrl()
