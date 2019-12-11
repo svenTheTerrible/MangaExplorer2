@@ -43,8 +43,9 @@ class MangaTown() : MangaSource() {
     }
 
     private fun getChapterNameFromUrl(pageUrl: String): String? {
-        val regex = """https:\/\/m\.mangatown\.com\/manga\/.*?\/(c.*?)(\/|${'$'})""".toRegex()
-        val matchResult = regex.find(pageUrl)
+        val pageUrlWithoutDomain = removeDomainNameFromUrl(pageUrl)
+        val regex = """manga\/.*?\/(c.*?)(\/|${'$'})""".toRegex()
+        val matchResult = regex.find(pageUrlWithoutDomain)
         val groupValues = matchResult?.groupValues
         return if (groupValues != null && groupValues.size > 1) groupValues[1] else null
     }
@@ -88,10 +89,21 @@ class MangaTown() : MangaSource() {
         )
     }
 
+    private fun removeDomainNameFromUrl(urlWithDomainName: String): String {
+        var cleaner = urlWithDomainName.replace("http://ssom.mangatown.com/", "")
+        cleaner = urlWithDomainName.replace("https://ssom.mangatown.com/", "")
+        cleaner = cleaner.replace("https://www.mangatown.com/", "")
+        cleaner = cleaner.replace("http://www.mangatown.com/", "")
+        cleaner = cleaner.replace("https://m.mangatown.com/", "")
+        cleaner = cleaner.replace("http://m.mangatown.com/", "")
+        return cleaner
+    }
+
     private fun getNextChapterPageOne(pageUrl: String, chapterMenuUrl: String): String? {
         val desktopPageUrl = toDesktopUrl(pageUrl)
         val chapters = getChaptersSync(chapterMenuUrl)
-        val index = chapters.indexOfFirst { desktopPageUrl.contains(it.url)}
+        val desktopUrlPath = removeDomainNameFromUrl(desktopPageUrl)
+        val index = chapters.indexOfFirst { desktopUrlPath.contains(removeDomainNameFromUrl(it.url))}
         if(index <0 || index == chapters.size -1){
             return null
         }
