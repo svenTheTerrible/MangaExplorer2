@@ -24,7 +24,10 @@ class MangaTown() : MangaSource() {
     }
 
     private fun repairUrl(url: String): String {
-        return "https:" + url
+        if(url.contains("mangatown.com")){
+            return "https:" + url
+        }
+        return "https://www.mangatown.com" + url;
     }
 
     override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>) -> Unit): Unit {
