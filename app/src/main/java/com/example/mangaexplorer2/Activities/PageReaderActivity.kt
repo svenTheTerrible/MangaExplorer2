@@ -22,6 +22,8 @@ import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
+import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
+import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
 import kotlinx.android.synthetic.main.activity_page_reader.*
 
 
@@ -42,7 +44,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page_reader)
         pageBufferList = PageBufferList(applicationContext, 3)
-        favoriteDB = FavoritenDB(applicationContext)
+        favoriteDB = getFavoriteDbInstance(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         unpackExtras()
         currentPageUrl = chapterResult.url
@@ -60,8 +62,14 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         loadCurrentPageUrl()
     }
 
+    override fun onResume() {
+        super.onResume()
+        favoriteDB = getFavoriteDbInstance(applicationContext)
+    }
+
     override fun onPause() {
         super.onPause()
+        closeFavoriteDbInstance()
         val currentPage = currentPageUrl
         if(currentPage != null){
             intent.putExtra(

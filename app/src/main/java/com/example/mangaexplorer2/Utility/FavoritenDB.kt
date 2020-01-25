@@ -4,6 +4,20 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import com.example.mangaexplorer2.Models.FavoriteItem
 
+private var favoriteDb: FavoritenDB? = null
+
+fun getFavoriteDbInstance(context: Context): FavoritenDB {
+    if(favoriteDb == null){
+        favoriteDb = FavoritenDB(context)
+    }
+    return favoriteDb!!
+}
+
+fun closeFavoriteDbInstance(): Unit {
+    favoriteDb?.closeDB()
+    favoriteDb = null
+}
+
 
 class FavoritenDB(context: Context) {
     val db: SQLiteDatabase? = DbHelper(
@@ -33,6 +47,10 @@ class FavoritenDB(context: Context) {
                 db.execSQL("""INSERT INTO favorites(mangaTitle, mangaSource, coverImageUrl, chapterMenuUrl,currentPageUrl, newChapterAvailable) VALUES("${favoriteItem.mangaTitle}", "${favoriteItem.mangaSource}", "${favoriteItem.coverImageUrl}", "${favoriteItem.chapterMenuUrl}","${favoriteItem.currentPageUrl}", 0)""".trimIndent())
             }
         }
+    }
+
+    fun closeDB(): Unit {
+        db?.close()
     }
 
     fun removeReadingProgress(mangaSource: String, mangaTitle: String): Unit {

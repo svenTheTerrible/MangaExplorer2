@@ -19,6 +19,8 @@ import com.example.mangaexplorer2.MangaSources.*
 import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
+import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
+import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -49,8 +51,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
-        favoritenDB = FavoritenDB(applicationContext)
+        favoritenDB = getFavoriteDbInstance(applicationContext)
         updateFavoriteList()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        closeFavoriteDbInstance()
     }
 
     private fun checkFavoriteForUpdate(favorite: FavoriteItem): FavoriteItem {
@@ -111,6 +118,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
+        favoritenDB = getFavoriteDbInstance(applicationContext)
         updateFavoriteList()
     }
 
