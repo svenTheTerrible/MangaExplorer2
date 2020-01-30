@@ -17,6 +17,7 @@ import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
 import com.example.mangaexplorer2.MangaSources.*
 import com.example.mangaexplorer2.MangaSources.util.*
+import com.example.mangaexplorer2.Models.NextChapterState
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
 import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
@@ -62,13 +63,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun checkFavoriteForUpdate(favorite: FavoriteItem): FavoriteItem {
         val mangaSource = SourceRegister().getSource(favorite.mangaSource)
-        val nextPagePackage = mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
+        var nextPageState = NextChapterState.UNAVAILABLE
+        try{
+            val nextPagePackage = mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
+            if(nextPagePackage.nextPageUrl != null){
+                nextPageState =  NextChapterState.AVAILABLE
+            }
+        }catch (e:Error){
+            nextPageState = NextChapterState.ERROR
+        }
+
         return FavoriteItem(
             favorite.mangaTitle,
             favorite.mangaSource,
             favorite.coverImageUrl,
             favorite.chapterMenuUrl,
-            nextPagePackage.nextPageUrl != null,
+            nextPageState,
             favorite.currentPageUrl
         )
     }
@@ -99,7 +109,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             handler.post {
                 favoriteItems = updatedFavorites
-                val newChaptersCount = updatedFavorites.filter{ it.hasNewChapter}.size
+                val newChaptersCount = updatedFavorites.filter{ it.hasNewChapter == NextChapterState.AVAILABLE}.size
                 Snackbar.make(view, "$newChaptersCount neue${if(newChaptersCount == 1) "s" else ""} Kapitel verfügbar", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
                 isCheckingForUpdates = false

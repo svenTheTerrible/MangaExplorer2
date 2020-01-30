@@ -1,5 +1,6 @@
 package com.example.mangaexplorer2.Adapters
 import android.net.Uri
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.Models.FavoriteItem
+import com.example.mangaexplorer2.Models.NextChapterState
 import com.example.mangaexplorer2.R
 
 
@@ -37,7 +39,7 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
 
         holder.sourceTextView.text = favoriteItem.mangaSource
         holder.titleTextView.text =favoriteItem.mangaTitle
-        holder.updateAvailableFrameLayout.visibility = if(favoriteItem.hasNewChapter) View.VISIBLE else View.INVISIBLE
+        updateNewChapterItem(favoriteItem.hasNewChapter, holder)
         holder.favoriteCardView.setOnClickListener{
             onClick(favoriteItem)
         }
@@ -50,6 +52,24 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
         })
     }
 
+    private fun updateNewChapterItem(status: NextChapterState, holder: ViewHolder):Unit {
+        holder.updateAvailableFrameLayout.visibility = View.INVISIBLE
+        holder.updateAvailableFrameLayout.setBackgroundColor(ContextCompat.getColor(holder.mView.context, R.color.design_default_color_primary))
+        holder.updateAvailableTextView.text = "new"
+
+        if(status == NextChapterState.AVAILABLE){
+            holder.updateAvailableFrameLayout.visibility = View.VISIBLE
+            return
+        }
+
+        if(status == NextChapterState.ERROR){
+            holder.updateAvailableFrameLayout.visibility = View.VISIBLE
+            holder.updateAvailableTextView.text = "error"
+            holder.updateAvailableFrameLayout.setBackgroundColor(ContextCompat.getColor(holder.mView.context, R.color.colorAccent))
+            return
+        }
+    }
+
     override fun getItemCount(): Int = favoriteItems.size
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
@@ -57,6 +77,7 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
         val titleTextView: TextView = mView.findViewById(R.id.titleTextView)
         val sourceTextView: TextView = mView.findViewById(R.id.sourceTextView)
         val updateAvailableFrameLayout: FrameLayout = mView.findViewById(R.id.updateAvailableFrameLayout)
+        val updateAvailableTextView: TextView = mView.findViewById(R.id.updateAvailableTextView)
         val favoriteCardView: CardView = mView.findViewById(R.id.favoriteCardView)
     }
 }

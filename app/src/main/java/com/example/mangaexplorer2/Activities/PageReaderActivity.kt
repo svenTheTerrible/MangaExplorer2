@@ -20,6 +20,7 @@ import com.example.mangaexplorer2.Activities.util.PageLoadingState
 import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
 import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.Models.FavoriteItem
+import com.example.mangaexplorer2.Models.NextChapterState
 import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.Utility.FavoritenDB
 import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
@@ -98,10 +99,6 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
             progressBar.visibility = View.VISIBLE
-            val circularProgressDrawable = CircularProgressDrawable(this)
-            circularProgressDrawable.strokeWidth = 5f
-            circularProgressDrawable.centerRadius = 30f
-            circularProgressDrawable.start()
             pageBufferList.createPageBuffer(pageUrl, searchResult.url, mangaSource)
             pageBufferList.getPageResult(pageUrl){
                 updateImageView(it)
@@ -183,7 +180,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
                     mangaSource = mangaSource.sourceName.toString(),
                     currentPageUrl = currentUrl,
                     chapterMenuUrl = searchResult.url,
-                    hasNewChapter = false,
+                    hasNewChapter = NextChapterState.UNAVAILABLE,
                     coverImageUrl = searchResult.coverUrl
                 )
             )

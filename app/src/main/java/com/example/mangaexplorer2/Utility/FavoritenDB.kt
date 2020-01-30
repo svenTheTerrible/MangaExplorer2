@@ -3,6 +3,7 @@ package com.example.mangaexplorer2.Utility
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import com.example.mangaexplorer2.Models.FavoriteItem
+import com.example.mangaexplorer2.Models.NextChapterState
 
 private var favoriteDb: FavoritenDB? = null
 
@@ -63,9 +64,9 @@ class FavoritenDB(context: Context) {
         }
     }
 
-    fun setChapterAvailable(isAvailable: Boolean,mangaSource: String, mangaTitle: String): Unit {
+    fun setChapterAvailable(isAvailable: NextChapterState,mangaSource: String, mangaTitle: String): Unit {
         if (db != null) {
-            val available = if(isAvailable) 1 else 0
+            val available = isAvailable.ordinal
             db.execSQL(
                 """
                 UPDATE favorites SET newChapterAvailable=$available WHERE mangaTitle="$mangaTitle" AND mangaSource="$mangaSource"
@@ -86,6 +87,16 @@ class FavoritenDB(context: Context) {
         return false
     }
 
+    private fun getNextChapterStateFromInt(chapterStateNumber: Int): NextChapterState{
+        if(chapterStateNumber == 0){
+            return NextChapterState.UNAVAILABLE
+        }
+        if(chapterStateNumber == 1){
+            return NextChapterState.AVAILABLE;
+        }
+        return NextChapterState.ERROR;
+    }
+
     fun getFavorites(): List<FavoriteItem> {
         if (db != null) {
             val cursor = db.rawQuery(
@@ -103,7 +114,7 @@ class FavoritenDB(context: Context) {
                         coverImageUrl = cursor.getString(cursor.getColumnIndex("coverImageUrl")),
                         chapterMenuUrl = cursor.getString(cursor.getColumnIndex("chapterMenuUrl")),
                         currentPageUrl = cursor.getString(cursor.getColumnIndex("currentPageUrl")),
-                        hasNewChapter = cursor.getInt(cursor.getColumnIndex("newChapterAvailable")) == 1
+                        hasNewChapter = getNextChapterStateFromInt(cursor.getInt(cursor.getColumnIndex("newChapterAvailable")))
                     )
                 } while (cursor.moveToNext())
             }
