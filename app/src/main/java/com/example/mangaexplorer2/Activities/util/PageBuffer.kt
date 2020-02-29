@@ -23,7 +23,10 @@ enum class PageLoadingError{
     IMAGE_NOT_LOADING
 }
 
-data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: PageLoadingError?, val pageResult: PageResult?, val imageBitmap: List<Bitmap>)
+data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: PageLoadingError?, val pageResult: PageResult?, val imageBitmap: List<Bitmap>, val pageUrl: String)
+
+
+val MAX_LOADING_TRIES = 10
 
 class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
     private var loadingStatus: PageLoadingState =
@@ -41,27 +44,39 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             loadingStatus,
             errorType,
             pageResult,
-            imageBitmaps
+            imageBitmaps,
+            pageUrl
         )
     }
 
+    private fun tryMultiplePageLoads():PageResult?{
+        var loadingTry = 0
+        var pageResult: PageResult? = null
+        while (loadingTry < MAX_LOADING_TRIES && pageResult == null){
+            try{
+                pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl)
+            }catch (e: Exception){}
+            loadingTry += 1
+        }
+        return pageResult
+    }
+
     private fun loadPage() {
-        try {
-            pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl)
-            nextPageCallback(pageResult?.nextPageUrl)
-        }catch (e: Exception){
+        pageResult = tryMultiplePageLoads()
+        if(pageResult == null){
             errorType = PageLoadingError.PAGE_NOT_LOADING
             loadingStatus = PageLoadingState.FAILED_TO_LOAD
             nextPageCallback(null)
             return
         }
+        nextPageCallback(pageResult?.nextPageUrl)
         imageUrlToBitmapList()
     }
 
     private fun imageUrlToBitmapList(){
         val imageUrl = pageResult?.imageUrl
         if(imageUrl == null){
-            errorType = PageLoadingError.PAGE_NOT_LOADING
+            errorType = PageLoadingError.IMAGE_NOT_LOADING
             loadingStatus = PageLoadingState.FAILED_TO_LOAD
             return
         }
@@ -72,6 +87,12 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .load(Uri.parse(imageUrl))
             .into(object : CustomTarget<Bitmap>() {
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    super.onLoadFailed(errorDrawable)
+                    errorType = PageLoadingError.IMAGE_NOT_LOADING
+                    loadingStatus = PageLoadingState.FAILED_TO_LOAD
+                }
+
                 override fun onLoadCleared(p0: Drawable?) {}
                 override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
                     imageBitmaps = if (p0.height / p0.width > 2.5) {

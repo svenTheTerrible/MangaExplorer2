@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GestureDetectorCompat
-import android.support.v4.widget.CircularProgressDrawable
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -16,6 +15,7 @@ import android.view.View
 import android.widget.LinearLayout
 import com.example.mangaexplorer2.Activities.util.PageBufferList
 import com.example.mangaexplorer2.Activities.util.PageBufferResult
+import com.example.mangaexplorer2.Activities.util.PageLoadingError
 import com.example.mangaexplorer2.Activities.util.PageLoadingState
 import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
 import com.example.mangaexplorer2.MangaSources.util.*
@@ -26,6 +26,10 @@ import com.example.mangaexplorer2.Utility.FavoritenDB
 import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
 import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
 import kotlinx.android.synthetic.main.activity_page_reader.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 
 
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
@@ -123,12 +127,30 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }else if(pageBufferResult.imageBitmap.size == 1){
             renderBitmap(pageBufferResult.imageBitmap[0])
         }
-        pageBufferResult.imageBitmap
         this.currentPageResult = pageBufferResult
     }
 
     private fun renderErrorOptions(pageBufferResult: PageBufferResult){
-        //todo give some options to fix this mess
+
+
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+        if(pageBufferResult.errorType === PageLoadingError.IMAGE_NOT_LOADING){
+            errorText.text =
+                "Could not load image link -> imageUrl: '${pageBufferResult.pageResult?.imageUrl}'"
+            val clip = ClipData.newPlainText("", pageBufferResult.pageResult?.imageUrl)
+            clipboard.primaryClip = clip
+            Toast.makeText(applicationContext, "ImageUrl copied", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if(pageBufferResult.errorType === PageLoadingError.PAGE_NOT_LOADING){
+            errorText.text = "Page did not load -> pageUrl: '${pageBufferResult.pageUrl}'"
+            val clip = ClipData.newPlainText("", pageBufferResult.pageUrl)
+            clipboard.primaryClip = clip
+            Toast.makeText(applicationContext, "PageUrl copied", Toast.LENGTH_SHORT).show()
+            return
+        }
     }
 
     private fun renderSuccessfullImage(pageBufferResult: PageBufferResult){

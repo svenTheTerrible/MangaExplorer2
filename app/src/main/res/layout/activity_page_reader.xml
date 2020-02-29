@@ -8,11 +8,19 @@
         tools:context=".Activities.PageReaderActivity" android:background="@color/greyBackground"
         android:id="@+id/readerFrameLayout">
 
-    <ProgressBar
+    <TextView
+            android:id="@+id/errorText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/progressBar" android:elevation="1dp" android:layout_gravity="center"
-            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"/>
+            android:layout_gravity="center" />
+
+    <ProgressBar
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="1dp" />
     <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:visibility="gone" android:id="@+id/multiImageView"

@@ -45,7 +45,7 @@ class TenManga() : MangaSource() {
     }
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
-        val doc = Jsoup.connect(pageUrl).get()
+        val doc = Jsoup.connect(pageUrl).timeout(5000).get()
         val image = doc.selectFirst("#manga_pic_1")
         val selectedPageAndPageAmountText = doc.selectFirst(".pic_download").selectFirst("a").text()
         val pageAmountText = selectedPageAndPageAmountText.split(" of ")

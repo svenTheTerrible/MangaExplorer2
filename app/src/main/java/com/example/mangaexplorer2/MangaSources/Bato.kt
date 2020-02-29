@@ -50,7 +50,7 @@ class Bato() : MangaSource() {
     }
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
-        val doc = Jsoup.connect(pageUrl).get()
+        val doc = Jsoup.connect(pageUrl).timeout(5000).get()
         val docString = doc.html()
         val jsonMatch = """var images = (\{.*?\})""".toRegex().find(docString, 0)
         val json =

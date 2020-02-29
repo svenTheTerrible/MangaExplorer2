@@ -73,7 +73,7 @@ class MangaTown() : MangaSource() {
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
         val mobileUrl = toMobileUrl(pageUrl)
-        val doc = Jsoup.connect(mobileUrl).get()
+        val doc = Jsoup.connect(mobileUrl).timeout(5000).get()
         val results = doc.select("#image").map { resultItem ->
             resultItem.attr("src")
         }
