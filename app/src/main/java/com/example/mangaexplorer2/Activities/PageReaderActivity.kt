@@ -132,6 +132,9 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     private fun renderErrorOptions(pageBufferResult: PageBufferResult){
 
+        singleImageView.visibility = View.INVISIBLE
+        multiImageView.visibility = View.INVISIBLE
+
 
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 

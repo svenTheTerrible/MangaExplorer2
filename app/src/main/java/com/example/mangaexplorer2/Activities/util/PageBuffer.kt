@@ -26,7 +26,7 @@ enum class PageLoadingError{
 data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: PageLoadingError?, val pageResult: PageResult?, val imageBitmap: List<Bitmap>, val pageUrl: String)
 
 
-val MAX_LOADING_TRIES = 10
+val MAX_LOADING_TRIES = 5
 
 class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
     private var loadingStatus: PageLoadingState =
@@ -69,11 +69,10 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             nextPageCallback(null)
             return
         }
-        nextPageCallback(pageResult?.nextPageUrl)
         imageUrlToBitmapList()
     }
 
-    private fun imageUrlToBitmapList(){
+    private fun imageUrlToBitmapList(tryCount: Int = 0){
         val imageUrl = pageResult?.imageUrl
         if(imageUrl == null){
             errorType = PageLoadingError.IMAGE_NOT_LOADING
@@ -89,6 +88,10 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             .into(object : CustomTarget<Bitmap>() {
                 override fun onLoadFailed(errorDrawable: Drawable?) {
                     super.onLoadFailed(errorDrawable)
+                    if(tryCount < MAX_LOADING_TRIES){
+                        imageUrlToBitmapList(tryCount +1)
+                        return
+                    }
                     errorType = PageLoadingError.IMAGE_NOT_LOADING
                     loadingStatus = PageLoadingState.FAILED_TO_LOAD
                 }
@@ -101,6 +104,7 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
                         listOf(p0)
                     }
                     loadingStatus = PageLoadingState.LOADED
+                    nextPageCallback(pageResult?.nextPageUrl)
                 }
             })
     }
