@@ -1,5 +1,7 @@
 package com.example.mangaexplorer2.Activities
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -25,6 +27,7 @@ import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -123,7 +126,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         favoriteItems = favoritenDB.getFavorites()
         favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         favoritenRecyclerView.adapter =
-            FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::onLongClickFavoriteItem)
+            FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::openFavoriteMenu)
     }
 
     override fun onResume() {
@@ -132,7 +135,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateFavoriteList()
     }
 
-    private fun onLongClickFavoriteItem(favoriteItem: FavoriteItem): Unit {
+    private fun openToChapterMenu(favoriteItem: FavoriteItem): Unit {
         val intent = Intent(this, ChapterActivity::class.java)
         intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
         intent.putExtra(
@@ -140,6 +143,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             SearchResult(favoriteItem.mangaTitle, favoriteItem.chapterMenuUrl, favoriteItem.coverImageUrl)
         )
         startActivity(intent)
+    }
+
+    private fun openFavoriteMenu(favoriteItem: FavoriteItem): Unit {
+        val builder = AlertDialog.Builder(this)
+        val inflater = this.layoutInflater
+
+        builder.setItems(listOf<String>("Kapitelmenü", "Defavorisieren").toTypedArray(), DialogInterface.OnClickListener(fun (dialogInterface: DialogInterface, index: Int):Unit {
+            when (index) {
+                0 -> openToChapterMenu(favoriteItem)
+                1 -> {
+                    favoritenDB.removeReadingProgress(favoriteItem.mangaSource, favoriteItem.mangaTitle)
+                    updateFavoriteList()
+                }
+                else -> { // Note the block
+                    throw Exception("Unknown option for favorite dialog")
+                }
+            }
+        }))
+
+        builder.create()
+        builder.show()
     }
 
     private fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
