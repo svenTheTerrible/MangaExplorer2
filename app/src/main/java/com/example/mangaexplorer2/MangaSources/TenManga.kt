@@ -38,12 +38,6 @@ class TenManga() : MangaSource() {
         }.execute()
     }
 
-    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
-        AsyncWrapper {
-            callback(getPageResultSync(pageUrl, chapterMenuUrl))
-        }.execute()
-    }
-
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
         val doc = Jsoup.connect(pageUrl).timeout(5000).get()
         val image = doc.selectFirst("#manga_pic_1")

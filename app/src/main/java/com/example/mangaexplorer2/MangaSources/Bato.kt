@@ -43,12 +43,6 @@ class Bato() : MangaSource() {
         return "https://bato.to$incompleteUrl"
     }
 
-    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
-        AsyncWrapper {
-            callback(getPageResultSync(pageUrl, chapterMenuUrl))
-        }.execute()
-    }
-
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
         val doc = Jsoup.connect(pageUrl).timeout(5000).get()
         val docString = doc.html()

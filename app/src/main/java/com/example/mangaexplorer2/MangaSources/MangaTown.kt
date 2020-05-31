@@ -65,15 +65,10 @@ class MangaTown() : MangaSource() {
         return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
     }
 
-    override fun getPageResult(pageUrl: String, chapterMenuUrl: String, callback: (pageResult: PageResult) -> Unit) {
-        AsyncWrapper {
-            callback(getPageResultSync(pageUrl, chapterMenuUrl))
-        }.execute()
-    }
-
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
         val mobileUrl = toMobileUrl(pageUrl)
         val doc = Jsoup.connect(mobileUrl).timeout(5000).get()
+
         val results = doc.select("#image").map { resultItem ->
             resultItem.attr("src")
         }

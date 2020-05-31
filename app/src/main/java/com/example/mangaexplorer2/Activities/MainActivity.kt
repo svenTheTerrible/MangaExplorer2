@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if(nextPagePackage.nextPageUrl != null){
                 nextPageState =  NextChapterState.AVAILABLE
             }
-        }catch (e:Error){
+        }catch (e:Exception){
             nextPageState = NextChapterState.ERROR
         }
 
