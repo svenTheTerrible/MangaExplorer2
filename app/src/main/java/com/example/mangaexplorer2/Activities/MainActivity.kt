@@ -27,6 +27,9 @@ import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import android.util.DisplayMetrics
+import com.example.mangaexplorer2.Adapters.DoubleFavoritenListItemAdapter
+
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(chapterToolbar)
 
         fab.setOnClickListener { view ->
-            if(!isCheckingForUpdates){
+            if (!isCheckingForUpdates) {
                 checkForNewChapters(view)
             }
         }
@@ -67,10 +70,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun checkFavoriteForUpdate(favorite: FavoriteItem): FavoriteItem {
         val mangaSource = SourceRegister().getSource(favorite.mangaSource)
         var nextPageState = NextChapterState.UNAVAILABLE
-        try{
-            val nextPagePackage = mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
-            if(nextPagePackage.nextPageUrl != null){
-                nextPageState =  NextChapterState.AVAILABLE
+        try {
+            val nextPagePackage =
+                mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
+            if (nextPagePackage.nextPageUrl != null) {
+                nextPageState = NextChapterState.AVAILABLE
             }
         }catch (e:Exception){
             nextPageState = NextChapterState.ERROR
@@ -86,11 +90,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
     }
 
-    private fun updateNewChapterFab(): Unit{
-        if(isCheckingForUpdates){
+    private fun updateNewChapterFab(): Unit {
+        if (isCheckingForUpdates) {
             fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
             fab.isEnabled = false
-        }else{
+        } else {
             fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
             fab.isEnabled = true
         }
@@ -112,8 +116,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             handler.post {
                 favoriteItems = updatedFavorites
-                val newChaptersCount = updatedFavorites.filter{ it.hasNewChapter == NextChapterState.AVAILABLE}.size
-                Snackbar.make(view, "$newChaptersCount neue${if(newChaptersCount == 1) "s" else ""} Kapitel verfügbar", Snackbar.LENGTH_LONG)
+                val newChaptersCount =
+                    updatedFavorites.filter { it.hasNewChapter == NextChapterState.AVAILABLE }.size
+                Snackbar.make(
+                    view,
+                    "$newChaptersCount neue${if (newChaptersCount == 1) "s" else ""} Kapitel verfügbar",
+                    Snackbar.LENGTH_LONG
+                )
                     .setAction("Action", null).show()
                 isCheckingForUpdates = false
                 updateNewChapterFab()
@@ -122,11 +131,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }).start()
     }
 
+    private fun bundleBy2(favorites: List<FavoriteItem>): List<Pair<FavoriteItem, FavoriteItem?>> {
+        val packedFavoriteItems = mutableListOf<Pair<FavoriteItem, FavoriteItem?>>()
+        for (x in favoriteItems.indices step 2) {
+            packedFavoriteItems.add(Pair(favorites[x], favorites.getOrNull(x+1)))
+        }
+        return packedFavoriteItems;
+    }
+
     private fun updateFavoriteList(): Unit {
-        favoriteItems = favoritenDB.getFavorites()
-        favoritenRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val width = displayMetrics.widthPixels / displayMetrics.scaledDensity
+
+        favoriteItems = favoritenDB.getFavorites().sortedBy { item -> item.hasNewChapter }.reversed()
+
+
+        favoritenRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+
+        if (width > 500) {
+            val bundledFavoriteItems = bundleBy2(favoriteItems)
+            favoritenRecyclerView.adapter =
+                DoubleFavoritenListItemAdapter(
+                    bundledFavoriteItems,
+                    ::onClickFavoriteItems,
+                    ::openFavoriteMenu
+                )
+            return;
+        }
+
         favoritenRecyclerView.adapter =
-            FavoritenListItemAdapter(favoriteItems, ::onClickFavoriteItems, ::openFavoriteMenu)
+            FavoritenListItemAdapter(
+                favoriteItems,
+                ::onClickFavoriteItems,
+                ::openFavoriteMenu
+            )
     }
 
     override fun onResume() {
@@ -140,7 +180,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
         intent.putExtra(
             "searchResult",
-            SearchResult(favoriteItem.mangaTitle, favoriteItem.chapterMenuUrl, favoriteItem.coverImageUrl)
+            SearchResult(
+                favoriteItem.mangaTitle,
+                favoriteItem.chapterMenuUrl,
+                favoriteItem.coverImageUrl
+            )
         )
         startActivity(intent)
     }
@@ -167,8 +211,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
-
-        //todo schauen, ob chapterName wichtig ist
 
         val intent = Intent(this, PageReaderActivity::class.java)
         intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))

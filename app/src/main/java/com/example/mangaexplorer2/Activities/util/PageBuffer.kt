@@ -113,11 +113,14 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
         val bitmaps = mutableListOf<Bitmap>()
         val origHeight = origBitmap.height
         var processedHeight = 0
+
+        val chunkHeight = 50
+
         while (processedHeight < origHeight) {
             val restHeight = origHeight - processedHeight
-            val heightToUse = if (restHeight < 200) restHeight else 200
+            val heightToUse = if (restHeight < chunkHeight) restHeight else chunkHeight
             bitmaps.add(Bitmap.createBitmap(origBitmap, 0, processedHeight, origBitmap.width, heightToUse))
-            processedHeight += 200
+            processedHeight += chunkHeight
         }
         return bitmaps
     }
