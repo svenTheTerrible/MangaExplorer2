@@ -47,6 +47,7 @@ class DoubleFavoritenListItemAdapter(
             holder.favoriteCardView.visibility = View.INVISIBLE
             return
         }
+        holder.favoriteCardView.visibility = View.VISIBLE
         GlideApp.with(context)
             .load(Uri.parse(favorite.coverImageUrl))
             .transition(withCrossFade())
