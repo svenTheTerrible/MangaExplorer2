@@ -65,6 +65,14 @@ class MangaTown() : MangaSource() {
         return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
     }
 
+    private fun repairImageUrl(url: String): String {
+        val test = url.subSequence(0,2)
+        if(test == "//"){
+            return "http://$url";
+        }
+        return url
+    }
+
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
         val mobileUrl = toMobileUrl(pageUrl)
         val doc = Jsoup.connect(mobileUrl).timeout(5000).get()
@@ -79,7 +87,7 @@ class MangaTown() : MangaSource() {
         val nextPageElementA = doc.select("#viewer").select("a")
         val nextPage = if (nextPageElementA.size > 0) nextPageElementA[0].attr("href") else null
         return PageResult(
-            imageUrl = if (results.size == 1) results[0] else null,
+            imageUrl = if (results.size == 1) repairImageUrl(results[0]) else null,
             chapterName = getChapterNameFromUrl(mobileUrl),
             pageAmount = pageAmount,
             pageCount = pageCount,
