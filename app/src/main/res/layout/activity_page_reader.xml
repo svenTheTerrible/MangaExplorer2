@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:elevation="1dp" />
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:visibility="gone" android:id="@+id/multiImageView"
             tools:listitem="@layout/multi_image_list_item" android:longClickable="true"
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:layout_gravity="bottom|right"
                 app:cardElevation="0dp" app:cardBackgroundColor="@color/greyBackground">
@@ -61,6 +61,6 @@
                         android:layout_height="wrap_content" android:id="@+id/pageCountTextView"
                         android:layout_marginLeft="20dp" android:textColor="@color/black"/>
             </LinearLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
     </FrameLayout>
 </FrameLayout>

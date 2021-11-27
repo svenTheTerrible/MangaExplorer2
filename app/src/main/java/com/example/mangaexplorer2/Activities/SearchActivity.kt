@@ -2,11 +2,11 @@ package com.example.mangaexplorer2.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.NavigationView
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import com.google.android.material.navigation.NavigationView
+import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
@@ -16,6 +16,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaTown
 import com.example.mangaexplorer2.MangaSources.TenManga
@@ -140,7 +141,12 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             } else {
                 View.VISIBLE
             }
-            searchResultRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+            searchResultRecyclerView.layoutManager =
+                LinearLayoutManager(
+                    this,
+                    RecyclerView.VERTICAL,
+                    false
+                )
             searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults, ::onClickSearchResult)
         }
     }

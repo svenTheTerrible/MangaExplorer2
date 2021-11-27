@@ -3,10 +3,11 @@ package com.example.mangaexplorer2.Activities
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.Adapters.ChapterResultListItemAdapter
@@ -48,7 +49,12 @@ class ChapterActivity : AppCompatActivity() {
     private fun updateChapterResults(chapters: List<ChapterResult>, isLoading: Boolean):Unit{
         this@ChapterActivity.runOnUiThread{
             chapterProgressBar.visibility = if(isLoading) View.VISIBLE else View.GONE
-            chapterRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+            chapterRecyclerView.layoutManager =
+                LinearLayoutManager(
+                    this,
+                    RecyclerView.VERTICAL,
+                    false
+                )
             chapterRecyclerView.adapter = ChapterResultListItemAdapter(chapters, ::onClickChapterResult)
         }
     }

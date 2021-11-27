@@ -5,12 +5,12 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.NavigationView
-import android.support.design.widget.Snackbar
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -28,6 +28,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import android.util.DisplayMetrics
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mangaexplorer2.Adapters.DoubleFavoritenListItemAdapter
 
 import java.lang.Exception
@@ -148,7 +149,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
         favoritenRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayout.VERTICAL, false)
+            LinearLayoutManager(
+                this,
+                RecyclerView.VERTICAL,
+                false
+            )
 
         if (width > 500) {
             val bundledFavoriteItems = bundleBy2(favoriteItems)
