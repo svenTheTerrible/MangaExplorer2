@@ -17,7 +17,6 @@
                     android:icon="@drawable/globe"
                     android:title="Mangatown"/>
             <item android:title="TenManga" android:id="@+id/mangasource_tenmanga" android:icon="@drawable/globe"/>
-            <item android:title="Bato" android:id="@+id/mangasource_bato" android:icon="@drawable/globe"/>
         </menu>
     </item>
 

@@ -30,6 +30,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import kotlinx.android.synthetic.main.fragment_web_view.*
 
 
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
@@ -112,6 +113,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     private fun updateImageView(pageBufferResult: PageBufferResult?) {
         progressBar.visibility = View.GONE
+        errorText.text = ""
         if(pageBufferResult == null){
             return
         }
@@ -131,12 +133,17 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun renderErrorOptions(pageBufferResult: PageBufferResult){
-
         singleImageView.visibility = View.INVISIBLE
         multiImageView.visibility = View.INVISIBLE
-
-
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        if(pageBufferResult.errorType === PageLoadingError.IMAGE_NOT_LOADING && pageBufferResult.pageResult?.imageUrl == null){
+            errorText.text =
+                "Image is broken"
+            val clip = ClipData.newPlainText("", pageBufferResult.pageUrl)
+            clipboard.primaryClip = clip
+            Toast.makeText(applicationContext, "PageUrl copied", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         if(pageBufferResult.errorType === PageLoadingError.IMAGE_NOT_LOADING){
             errorText.text =
@@ -187,9 +194,12 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         if (lastPageUrl != null && nextPageUrl != null) {
             lastPageRegister = lastPageRegister.plus(Pair(nextPageUrl, lastPageUrl))
         }
-        currentPageUrl = nextPageUrl
-        updateReadingProgress()
-        loadCurrentPageUrl()
+        if(nextPageUrl != null){
+            currentPageUrl = nextPageUrl
+            updateReadingProgress()
+            loadCurrentPageUrl()
+        }
+
     }
 
     private fun updateReadingProgress(force: Boolean = false) {

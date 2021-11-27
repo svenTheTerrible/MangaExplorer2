@@ -55,8 +55,10 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
         while (loadingTry < MAX_LOADING_TRIES && pageResult == null){
             try{
                 pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl)
-            }catch (e: Exception){}
-            loadingTry += 1
+            }catch (e: Exception){
+                loadingTry += 1
+            }
+
         }
         return pageResult
     }

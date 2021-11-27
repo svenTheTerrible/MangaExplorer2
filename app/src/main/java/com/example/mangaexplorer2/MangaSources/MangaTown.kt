@@ -2,12 +2,18 @@ package com.example.mangaexplorer2.MangaSources
 
 import com.example.mangaexplorer2.MangaSources.util.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import java.lang.Exception
 
 class MangaTown() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MANGATOWN
 
-    override fun getChapters(chapterMenuUrl: String, callback: (chapters: List<ChapterResult>) -> Unit): Unit {
+    override fun getChapters(
+        chapterMenuUrl: String,
+        callback: (chapters: List<ChapterResult>) -> Unit
+    ): Unit {
         AsyncWrapper {
             callback(getChaptersSync(chapterMenuUrl))
         }.execute()
@@ -24,13 +30,16 @@ class MangaTown() : MangaSource() {
     }
 
     private fun repairUrl(url: String): String {
-        if(url.contains("mangatown.com")){
+        if (url.contains("mangatown.com")) {
             return "https:" + url
         }
         return "https://www.mangatown.com" + url;
     }
 
-    override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>) -> Unit): Unit {
+    override fun getSearchResult(
+        searchterm: String,
+        callback: (searchResults: List<SearchResult>) -> Unit
+    ): Unit {
         AsyncWrapper {
             val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").get()
             callback(
@@ -45,74 +54,94 @@ class MangaTown() : MangaSource() {
         }.execute()
     }
 
-    private fun getChapterNameFromUrl(pageUrl: String): String? {
-        val pageUrlWithoutDomain = removeDomainNameFromUrl(pageUrl)
-        val regex = """manga\/.*?\/(c.*?)(\/|${'$'})""".toRegex()
-        val matchResult = regex.find(pageUrlWithoutDomain)
-        val groupValues = matchResult?.groupValues
-        return if (groupValues != null && groupValues.size > 1) groupValues[1] else null
-    }
-
-    private fun toMobileUrl(url: String): String {
-        val savePageUrl = url.replace("http://", "https://")
-        val mobileUrl = savePageUrl.replace("https://www", "https://m")
-        return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
-    }
-
-    private fun toDesktopUrl(url: String): String {
-        val savePageUrl = url.replace("http://", "https://")
-        val mobileUrl = savePageUrl.replace("https://m.", "https://www.")
-        return if (mobileUrl.last().toString() == "/") mobileUrl.dropLast(1) else mobileUrl
-    }
-
-    private fun repairImageUrl(url: String): String {
-        val test = url.subSequence(0,2)
-        if(test == "//"){
+    private fun repairImageUrl(url: String?): String? {
+        if (url == null) {
+            return null
+        }
+        val test = url.subSequence(0, 2)
+        if (test == "//") {
             return "http://$url";
         }
         return url
     }
 
-    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
-        val mobileUrl = toMobileUrl(pageUrl)
-        val doc = Jsoup.connect(mobileUrl).timeout(5000).get()
-
-        val results = doc.select("#image").map { resultItem ->
-            resultItem.attr("src")
+    private fun getDoc(url: String): Document? {
+        return try {
+            Jsoup.connect(url).timeout(5000).get()
+        } catch (
+            e: Exception
+        ) {
+            null
         }
-        val pageAmount = doc.select(".ch-select").select("option").size
-        val selectedPageListElement =
-            doc.select(".ch-select").select("option").find { element -> element.hasAttr("selected") }
-        val pageCount = selectedPageListElement?.text()?.toInt()
-        val nextPageElementA = doc.select("#viewer").select("a")
-        val nextPage = if (nextPageElementA.size > 0) nextPageElementA[0].attr("href") else null
+    }
+
+    private fun getImageUrl(doc: Document?): String? {
+        return try {
+            val result = doc?.select("#image")?.attr("src")
+            if(result == null || result.isEmpty()) null else result
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getAvailablePageOptions(doc: Document?): List<Element>? {
+        return try {
+            doc?.select(".manga_read_footer")?.select(".page_select")?.select("option")?.toList()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getChapterOptions(doc: Document?): List<Element>? {
+        return try {
+            doc?.select("#bottom_chapter_list")?.select("option")?.toList()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun repairNextPageUrl(url: String?): String? {
+
+        if (url == null) {
+            return null
+        }
+
+        if (url.contains("http")) {
+            return url
+        }
+        return "https://mangatown.com" + url
+    }
+
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+        val doc = getDoc(pageUrl)
+        val imageUrl = getImageUrl(doc)
+        val availablePageOptions = getAvailablePageOptions(doc)
+        val pageAmount = availablePageOptions?.size ?: 0
+
+        val selectedPageIndex =
+            availablePageOptions?.indexOfLast { element -> element.hasAttr("selected") }
+        val pageCount =
+            if (selectedPageIndex == -1 || selectedPageIndex == null) null else selectedPageIndex + 1
+        val chapterOptions = getChapterOptions(doc)
+        val selectedChapterIndex =
+            chapterOptions?.indexOfFirst { element -> element.hasAttr("selected") }
+
+        val chapterName =
+            if (selectedChapterIndex != null) chapterOptions?.getOrNull(selectedChapterIndex)
+                ?.text() else null
+        val nextChapterOption =
+            if (selectedChapterIndex != null) chapterOptions?.getOrNull(selectedChapterIndex + 1) else null
+        val nextPageOption =
+            if (selectedPageIndex != null) availablePageOptions?.getOrNull(selectedPageIndex + 1) else null
+        val nextPage =
+            if (nextPageOption != null) nextPageOption.attr("value") else nextChapterOption?.attr("value")
         return PageResult(
-            imageUrl = if (results.size == 1) repairImageUrl(results[0]) else null,
-            chapterName = getChapterNameFromUrl(mobileUrl),
+            imageUrl = repairImageUrl(imageUrl),
+            chapterName = chapterName,
             pageAmount = pageAmount,
             pageCount = pageCount,
-            nextPageUrl = if (pageAmount == pageCount) getNextChapterPageOne(pageUrl, chapterMenuUrl) else nextPage
+            nextPageUrl = repairNextPageUrl(nextPage)
         )
     }
 
-    private fun removeDomainNameFromUrl(urlWithDomainName: String): String {
-        var cleaner = urlWithDomainName.replace("http://ssom.mangatown.com/", "")
-        cleaner = urlWithDomainName.replace("https://ssom.mangatown.com/", "")
-        cleaner = cleaner.replace("https://www.mangatown.com/", "")
-        cleaner = cleaner.replace("http://www.mangatown.com/", "")
-        cleaner = cleaner.replace("https://m.mangatown.com/", "")
-        cleaner = cleaner.replace("http://m.mangatown.com/", "")
-        return cleaner
-    }
-
-    private fun getNextChapterPageOne(pageUrl: String, chapterMenuUrl: String): String? {
-        val desktopPageUrl = toDesktopUrl(pageUrl)
-        val chapters = getChaptersSync(chapterMenuUrl)
-        val desktopUrlPath = removeDomainNameFromUrl(desktopPageUrl)
-        val index = chapters.indexOfFirst { desktopUrlPath.contains(removeDomainNameFromUrl(it.url))}
-        if(index <0 || index == chapters.size -1){
-            return null
-        }
-        return chapters[index +1].url
-    }
 }
