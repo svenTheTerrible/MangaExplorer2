@@ -13,6 +13,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.Models.FavoriteItem
@@ -47,8 +49,11 @@ class DoubleFavoritenListItemAdapter(
             holder.favoriteCardView.visibility = View.INVISIBLE
             return
         }
+
+        val glideUrl = GlideUrl(favorite.coverImageUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+
         GlideApp.with(context)
-            .load(Uri.parse(favorite.coverImageUrl))
+            .load(glideUrl)
             .transition(withCrossFade())
             .into(holder.coverImageView)
 

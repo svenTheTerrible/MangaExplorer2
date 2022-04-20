@@ -9,6 +9,8 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.Adapters.ChapterResultListItemAdapter
 import com.example.mangaexplorer2.GlideApp
@@ -31,8 +33,10 @@ class ChapterActivity : AppCompatActivity() {
 
         chapterToolbar.title = searchResult.name
 
+        val glideUrl = GlideUrl(searchResult.coverUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+
         GlideApp.with(this)
-            .load(Uri.parse(searchResult.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(glideUrl).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(appBarMangaCover)
 

@@ -8,6 +8,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.MangaSources.util.SearchResult
@@ -28,8 +30,9 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val searchResult: SearchResult = searchResults[position]
+        val glideUrl = GlideUrl(searchResult.coverUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
         GlideApp.with(holder.mView.context)
-            .load(Uri.parse(searchResult.coverUrl)).diskCacheStrategy(DiskCacheStrategy.NONE)
+            .load(glideUrl).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(holder.searchResultImage)
         holder.mangaTitle.text = searchResult.name
