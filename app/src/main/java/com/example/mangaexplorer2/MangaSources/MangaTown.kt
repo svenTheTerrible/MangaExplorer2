@@ -20,7 +20,7 @@ class MangaTown() : MangaSource() {
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
-        val doc = Jsoup.connect(chapterMenuUrl).get()
+        val doc = Jsoup.connect(chapterMenuUrl).referrer("https://www.mangatown.com/").get()
         return doc.select(".chapter_list").select("a").map { chapterLink ->
             ChapterResult(
                 name = chapterLink.text(),
@@ -41,7 +41,7 @@ class MangaTown() : MangaSource() {
         callback: (searchResults: List<SearchResult>) -> Unit
     ): Unit {
         AsyncWrapper {
-            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").get()
+            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer("https://www.mangatown.com/").get()
             callback(
                 doc.select(".manga_cover").map { resultItem ->
                     SearchResult(
@@ -67,7 +67,7 @@ class MangaTown() : MangaSource() {
 
     private fun getDoc(url: String): Document? {
         return try {
-            Jsoup.connect(url).timeout(5000).get()
+            Jsoup.connect(url).referrer("https://www.mangatown.com/").timeout(5000).get()
         } catch (
             e: Exception
         ) {
@@ -86,7 +86,15 @@ class MangaTown() : MangaSource() {
 
     private fun getAvailablePageOptions(doc: Document?): List<Element>? {
         return try {
-            doc?.select(".manga_read_footer")?.select(".page_select")?.select("option")?.toList()
+            doc?.select(".manga_read_footer")?.select(".page_select")?.select("option")?.toList()?.filter { option ->
+                val text = option.text()
+                try {
+                    text.toInt()
+                    true
+                }catch (e: NumberFormatException){
+                    false
+                }
+            }
         } catch (e: Exception) {
             null
         }

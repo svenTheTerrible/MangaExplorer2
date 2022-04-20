@@ -3,8 +3,9 @@ package com.example.mangaexplorer2.Activities.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.mangaexplorer2.GlideApp
@@ -82,11 +83,13 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             return
         }
 
+        val glideUrl = GlideUrl(imageUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+
         GlideApp.with(context)
             .asBitmap()
             .skipMemoryCache(true)
             .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .load(Uri.parse(imageUrl))
+            .load(glideUrl)
             .into(object : CustomTarget<Bitmap>() {
                 override fun onLoadFailed(errorDrawable: Drawable?) {
                     super.onLoadFailed(errorDrawable)
