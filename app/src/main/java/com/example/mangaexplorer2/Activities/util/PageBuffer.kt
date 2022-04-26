@@ -83,7 +83,7 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             return
         }
 
-        val glideUrl = GlideUrl(imageUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+        val glideUrl = GlideUrl(imageUrl, LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build())
 
         GlideApp.with(context)
             .asBitmap()

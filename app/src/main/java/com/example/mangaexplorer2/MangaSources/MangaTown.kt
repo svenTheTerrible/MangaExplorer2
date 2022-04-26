@@ -10,6 +10,10 @@ class MangaTown() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MANGATOWN
 
+    override val refererUrl = "https://www.mangatown.com/"
+
+    override val mangaPageCache: MutableMap<String, MangaPageCache> = mutableMapOf()
+
     override fun getChapters(
         chapterMenuUrl: String,
         callback: (chapters: List<ChapterResult>) -> Unit
@@ -20,7 +24,7 @@ class MangaTown() : MangaSource() {
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
-        val doc = Jsoup.connect(chapterMenuUrl).referrer("https://www.mangatown.com/").get()
+        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).get()
         return doc.select(".chapter_list").select("a").map { chapterLink ->
             ChapterResult(
                 name = chapterLink.text(),
@@ -41,7 +45,7 @@ class MangaTown() : MangaSource() {
         callback: (searchResults: List<SearchResult>) -> Unit
     ): Unit {
         AsyncWrapper {
-            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer("https://www.mangatown.com/").get()
+            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer(refererUrl).get()
             callback(
                 doc.select(".manga_cover").map { resultItem ->
                     SearchResult(
@@ -67,7 +71,7 @@ class MangaTown() : MangaSource() {
 
     private fun getDoc(url: String): Document? {
         return try {
-            Jsoup.connect(url).referrer("https://www.mangatown.com/").timeout(5000).get()
+            Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
         } catch (
             e: Exception
         ) {

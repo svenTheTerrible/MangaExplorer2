@@ -7,6 +7,8 @@
         <entry key="app/src/main/res/layout/favoriten_list_item.xml" value="0.21041666666666667" />
         <entry key="app/src/main/res/layout/search_result_list_item.xml" value="0.1953125" />
         <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.21041666666666667" />
+        <entry key="app/src/main/res/menu/activity_search_actitiy_drawer.xml" value="0.25729166666666664" />
+        <entry key="app/src/main/res/menu/menu_chapter.xml" value="0.25729166666666664" />
       </map>
     </option>
   </component>

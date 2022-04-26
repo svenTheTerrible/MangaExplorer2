@@ -15,7 +15,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaTown
@@ -147,7 +146,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     RecyclerView.VERTICAL,
                     false
                 )
-            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults, ::onClickSearchResult)
+            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults, ::onClickSearchResult, mangaSource.refererUrl)
         }
     }
 

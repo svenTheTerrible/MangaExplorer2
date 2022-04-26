@@ -1,4 +1,5 @@
 package com.example.mangaexplorer2.Adapters
+
 import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
@@ -20,7 +21,11 @@ import com.example.mangaexplorer2.R
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  */
-class SearchResultListItemAdapter(private val searchResults: List<SearchResult>, private val onClick:(SearchResult)-> Unit) : RecyclerView.Adapter<SearchResultListItemAdapter.ViewHolder>() {
+class SearchResultListItemAdapter(
+    private val searchResults: List<SearchResult>,
+    private val onClick: (SearchResult) -> Unit,
+    private val referer: String
+) : RecyclerView.Adapter<SearchResultListItemAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -30,7 +35,10 @@ class SearchResultListItemAdapter(private val searchResults: List<SearchResult>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val searchResult: SearchResult = searchResults[position]
-        val glideUrl = GlideUrl(searchResult.coverUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+        val glideUrl = GlideUrl(
+            searchResult.coverUrl,
+            LazyHeaders.Builder().addHeader("Referer", referer).build()
+        )
         GlideApp.with(holder.mView.context)
             .load(glideUrl).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(DrawableTransitionOptions.withCrossFade())

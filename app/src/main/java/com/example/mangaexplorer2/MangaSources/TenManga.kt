@@ -7,6 +7,10 @@ class TenManga() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.TENMANGA
 
+    override val refererUrl = "https://my.tenmanga.com"
+
+    override val mangaPageCache: MutableMap<String, MangaPageCache> = mutableMapOf()
+
     override fun getSearchResult(searchterm: String, callback: (searchResults: List<SearchResult>) -> Unit): Unit {
         AsyncWrapper {
             val doc = Jsoup.connect("https://my.tenmanga.com/search/es/?wd=$searchterm").get()

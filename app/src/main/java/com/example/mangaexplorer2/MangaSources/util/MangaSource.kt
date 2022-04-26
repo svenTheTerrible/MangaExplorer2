@@ -12,11 +12,16 @@ class PageResult(val imageUrl: String?, val pageCount: Int?, val pageAmount: Int
 enum class MangaSourceName{
     MANGATOWN,
     TENMANGA,
-    BATO
+    MUCTAU
 }
 
+class MangaPageCache(val images: List<String>?, val chapterName: String?, val pageAmount: Int?, val nextChapterUrl: String?)
+
 abstract class MangaSource: Serializable{
-    abstract val sourceName: MangaSourceName;
+    abstract val sourceName: MangaSourceName
+    abstract val refererUrl: String
+    //Sometimes, all pages of a chapter can be parsed by processing one page of the manga, that can be cached here
+    abstract val mangaPageCache: MutableMap<String, MangaPageCache>
     abstract fun getChapters(chapterMenuUrl: String, callback:(chapters: List<ChapterResult>) -> Unit): Unit
     abstract fun getSearchResult(searchterm: String, callback:(searchResults: List<SearchResult>)-> Unit): Unit
     abstract fun getPageResultSync(pageUrl: String,chapterMenuUrl: String): PageResult

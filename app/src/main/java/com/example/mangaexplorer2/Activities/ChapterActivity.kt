@@ -33,7 +33,7 @@ class ChapterActivity : AppCompatActivity() {
 
         chapterToolbar.title = searchResult.name
 
-        val glideUrl = GlideUrl(searchResult.coverUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+        val glideUrl = GlideUrl(searchResult.coverUrl, LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build())
 
         GlideApp.with(this)
             .load(glideUrl).diskCacheStrategy(DiskCacheStrategy.NONE)

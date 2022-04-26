@@ -17,6 +17,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.example.mangaexplorer2.GlideApp
+import com.example.mangaexplorer2.MangaSources.util.SourceRegister
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Models.NextChapterState
 import com.example.mangaexplorer2.R
@@ -40,17 +41,34 @@ class DoubleFavoritenListItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val favoritePair: Pair<FavoriteItem, FavoriteItem?> = favoriteItems[position]
-        favoriteItemToViewHolder(favoritePair.first, holder.viewHolderPair.first, holder.mView.context)
-        favoriteItemToViewHolder(favoritePair.second, holder.viewHolderPair.second, holder.mView.context)
+        favoriteItemToViewHolder(
+            favoritePair.first,
+            holder.viewHolderPair.first,
+            holder.mView.context
+        )
+        favoriteItemToViewHolder(
+            favoritePair.second,
+            holder.viewHolderPair.second,
+            holder.mView.context
+        )
     }
 
-    private fun favoriteItemToViewHolder(favorite: FavoriteItem?, holder: ViewHolderBundle, context: Context): Unit {
-        if(favorite == null){
+    private fun favoriteItemToViewHolder(
+        favorite: FavoriteItem?,
+        holder: ViewHolderBundle,
+        context: Context
+    ): Unit {
+        if (favorite == null) {
             holder.favoriteCardView.visibility = View.INVISIBLE
             return
         }
 
-        val glideUrl = GlideUrl(favorite.coverImageUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+        val glideUrl = GlideUrl(
+            favorite.coverImageUrl,
+            LazyHeaders.Builder()
+                .addHeader("Referer", SourceRegister().getSource(favorite.mangaSource).refererUrl)
+                .build()
+        )
 
         GlideApp.with(context)
             .load(glideUrl)
@@ -70,7 +88,11 @@ class DoubleFavoritenListItemAdapter(
         }
     }
 
-    private fun updateNewChapterItem(status: NextChapterState, holder: ViewHolderBundle, context: Context): Unit {
+    private fun updateNewChapterItem(
+        status: NextChapterState,
+        holder: ViewHolderBundle,
+        context: Context
+    ): Unit {
         holder.updateAvailableFrameLayout.visibility = View.INVISIBLE
         holder.updateAvailableFrameLayout.setBackgroundColor(
             ContextCompat.getColor(

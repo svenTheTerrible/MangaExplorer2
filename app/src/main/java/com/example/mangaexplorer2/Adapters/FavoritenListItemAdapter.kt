@@ -14,6 +14,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.example.mangaexplorer2.GlideApp
+import com.example.mangaexplorer2.MangaSources.util.SourceRegister
 import com.example.mangaexplorer2.Models.FavoriteItem
 import com.example.mangaexplorer2.Models.NextChapterState
 import com.example.mangaexplorer2.R
@@ -34,7 +35,12 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val favoriteItem: FavoriteItem = favoriteItems[position]
 
-        val glideUrl = GlideUrl(favoriteItem.coverImageUrl, LazyHeaders.Builder().addHeader("Referer", "https://www.mangatown.com").build())
+        val glideUrl = GlideUrl(
+            favoriteItem.coverImageUrl,
+            LazyHeaders.Builder()
+                .addHeader("Referer", SourceRegister().getSource(favoriteItem.mangaSource).refererUrl)
+                .build()
+        )
         GlideApp.with(holder.mView.context)
             .load(glideUrl)
             .transition(withCrossFade())
