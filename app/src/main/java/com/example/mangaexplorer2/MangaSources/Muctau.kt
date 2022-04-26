@@ -25,10 +25,11 @@ class Muctau() : MangaSource() {
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
         val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).get()
-        return doc.select(".wp-manga-chapter").select("a").map { chapterItem ->
+        return doc.select(".version-chap").select("li").map { chapterItem ->
+            val chapterLink = chapterItem.select("a").first()
             ChapterResult(
-                name = chapterItem.select("a").text(),
-                url = chapterItem.select("a").attr("href")
+                name = chapterLink.text(),
+                url = chapterLink.attr("href")
             )
         }.reversed()
     }
