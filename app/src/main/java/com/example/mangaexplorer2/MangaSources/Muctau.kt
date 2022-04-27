@@ -91,8 +91,9 @@ class Muctau() : MangaSource() {
     }
 
     private fun getCachedParsedPageData(pageUrl: String, doc: Document?): MangaPageCache {
-        if (mangaPageCache.containsKey(pageUrl)) {
-            return mangaPageCache[pageUrl]!!
+        val pageUrlWithoutPageNumber = removePageCountFromUrl(pageUrl)
+        if (mangaPageCache.containsKey(pageUrlWithoutPageNumber)) {
+            return mangaPageCache[pageUrlWithoutPageNumber]!!
         }
         val imageUrls = getImageUrls(doc)
         val chapterOptions = getChapterOptions(doc)
@@ -108,7 +109,7 @@ class Muctau() : MangaSource() {
             imageUrls?.size ?: 0,
             nextChapterUrl
         )
-        mangaPageCache[pageUrl] = data
+        mangaPageCache[pageUrlWithoutPageNumber] = data
         return data
     }
 
