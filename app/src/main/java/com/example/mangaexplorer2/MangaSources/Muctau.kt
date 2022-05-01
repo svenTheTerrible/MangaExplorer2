@@ -55,13 +55,37 @@ class Muctau() : MangaSource() {
         }.execute()
     }
 
-    private fun getDoc(url: String): Document? {
-        return try {
-            Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
+    private fun getVariableChapterUrlPart(url: String): String{
+        val regex = "https:\\/\\/muctau\\.com\\/manga\\/(.*?)-".toRegex()
+        val result = regex.find(url)
+        val variablePart = result?.groups?.get(1)?.value
+        return variablePart ?: ""
+    }
+
+    private fun updateVariablePartInUrl(variableOld: String, variableNew: String, url: String): String{
+        return url.replace(variableOld, variableNew)
+    }
+
+    private fun requestDoc(url: String): Document{
+        return Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
+    }
+
+    private fun getDoc(url: String): Pair<String, Document?> {
+        val initialVariableUrlPart = getVariableChapterUrlPart(url)
+        try {
+            val doc = requestDoc(url)
+            val validationUrl = doc.select("meta").find { it.attr("property") == "og:url" }?.attr("content")
+            val validationUrlVariablePart = getVariableChapterUrlPart(validationUrl?: "")
+            if(validationUrlVariablePart == initialVariableUrlPart){
+                return Pair(url, doc)
+            }
+            val newUrl = updateVariablePartInUrl(initialVariableUrlPart, validationUrlVariablePart, url)
+            val newDoc = requestDoc(newUrl)
+            return Pair(newUrl, newDoc)
         } catch (
             e: Exception
         ) {
-            null
+            return Pair(url, null)
         }
     }
 
@@ -75,7 +99,7 @@ class Muctau() : MangaSource() {
                 ?.map { pageItem -> pageItem.select("img").attr("data-src") }
             if (result == null || result.isEmpty()) null else result.filter { it.isNotEmpty() }
                 .map { cleanStringFromTabsAndReturns(it) }
-                    //index 0 is removed, because its always a duplicate
+                //index 0 is removed, because its always a duplicate
                 .filterIndexed { index, _ -> index != 0 }
         } catch (e: Exception) {
             null
@@ -139,19 +163,17 @@ class Muctau() : MangaSource() {
     }
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
-        val doc = getDoc(pageUrl)
-        val parseResult = getCachedParsedPageData(pageUrl, doc)
+        val (url, doc) = getDoc(pageUrl)
+        val parseResult = getCachedParsedPageData(url, doc)
         val pageCount = getPageCountFromUrl(pageUrl)
 
-        val uff = PageResult(
+        return PageResult(
             imageUrl = parseResult.images?.get(pageCount - 1),
             chapterName = parseResult.chapterName,
             pageAmount = parseResult.pageAmount,
             pageCount = pageCount,
-            nextPageUrl = generateNextPageUrl(pageUrl, pageCount, parseResult)
+            nextPageUrl = generateNextPageUrl(url, pageCount, parseResult)
         )
-
-        return uff
     }
 
 }
