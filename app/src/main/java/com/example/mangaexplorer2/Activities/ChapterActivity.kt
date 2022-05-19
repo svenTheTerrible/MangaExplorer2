@@ -45,7 +45,7 @@ class ChapterActivity : AppCompatActivity() {
 
     private fun loadChapters(): Unit {
         updateChapterResults(emptyList(), true)
-        mangaSource.getChapters(searchResult.url) { chapters ->
+        mangaSource.getChapters(searchResult.url, searchResult.name) { chapters ->
             updateChapterResults(chapters, false)
         }
     }

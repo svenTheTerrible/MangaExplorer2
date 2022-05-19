@@ -27,7 +27,7 @@ class TenManga() : MangaSource() {
         }.execute()
     }
 
-    override fun getChapters(chapterMenuUrl: String, callback: (chapters: List<ChapterResult>) -> Unit): Unit {
+    override fun getChapters(chapterMenuUrl: String, mangaName: String, callback: (chapters: List<ChapterResult>) -> Unit): Unit {
         AsyncWrapper {
             val doc = Jsoup.connect(chapterMenuUrl + "?waring=1").get()
             callback(
@@ -42,7 +42,7 @@ class TenManga() : MangaSource() {
         }.execute()
     }
 
-    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
         val doc = Jsoup.connect(pageUrl).timeout(5000).get()
         val image = doc.selectFirst("#manga_pic_1")
         val selectedPageAndPageAmountText = doc.selectFirst(".pic_download").selectFirst("a").text()

@@ -29,7 +29,7 @@ data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: 
 
 val MAX_LOADING_TRIES = 5
 
-class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
+class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val mangaName: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
     private var loadingStatus: PageLoadingState =
         PageLoadingState.IS_LOADING
     private var errorType: PageLoadingError? = null
@@ -55,7 +55,7 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
         var pageResult: PageResult? = null
         while (loadingTry < MAX_LOADING_TRIES && pageResult == null){
             try{
-                pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl)
+                pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl, mangaName)
             }catch (e: Exception){
                 loadingTry += 1
             }

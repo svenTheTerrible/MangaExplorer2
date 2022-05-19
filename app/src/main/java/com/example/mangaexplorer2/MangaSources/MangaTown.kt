@@ -16,6 +16,7 @@ class MangaTown() : MangaSource() {
 
     override fun getChapters(
         chapterMenuUrl: String,
+        mangaName: String,
         callback: (chapters: List<ChapterResult>) -> Unit
     ): Unit {
         AsyncWrapper {
@@ -124,7 +125,7 @@ class MangaTown() : MangaSource() {
         return "https://mangatown.com" + url
     }
 
-    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
         val doc = getDoc(pageUrl)
         val imageUrl = getImageUrl(doc)
         val availablePageOptions = getAvailablePageOptions(doc)

@@ -11,6 +11,7 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
         pageUrl: String,
         chapterMenuUrl: String,
         mangaSource: MangaSource,
+        mangaName: String,
         remainingBufferSize: Int = pageBufferSize
     ) {
         clearOldBuffers()
@@ -18,13 +19,13 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
 
         fun loadNextPage(nextPageUrl: String?) {
             if (remainingBufferSize > 0 && nextPageUrl != null) {
-                createPageBuffer(nextPageUrl, chapterMenuUrl, mangaSource, remainingBufferSize - 1)
+                createPageBuffer(nextPageUrl, chapterMenuUrl, mangaSource, mangaName, remainingBufferSize - 1)
             }
         }
 
         if (matchingEntry == null) {
             val pageBuffer =
-                PageBuffer(System.currentTimeMillis(), context, mangaSource, pageUrl, chapterMenuUrl) {
+                PageBuffer(System.currentTimeMillis(), context, mangaSource, pageUrl, chapterMenuUrl, mangaName) {
                     loadNextPage(it)
                 }
             pageBufferList.add(pageBuffer)

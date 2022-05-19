@@ -16,15 +16,37 @@ class Muctau() : MangaSource() {
 
     override fun getChapters(
         chapterMenuUrl: String,
+        mangaName: String,
         callback: (chapters: List<ChapterResult>) -> Unit
     ): Unit {
         AsyncWrapper {
-            callback(getChaptersSync(chapterMenuUrl))
+            callback(getChaptersSync(chapterMenuUrl, mangaName))
         }.execute()
     }
 
-    private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
-        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).get()
+
+    private fun getDocFromVariableUrl(staticUrl: String, mangaName: String): Pair<String, Document> {
+        val firstDoc = Jsoup.connect(staticUrl).referrer(refererUrl).get()
+        val isLandingPage = firstDoc.select("meta")
+            .any { it.attr("property") == "og:title" && it.attr("content") == "Read Manga Online for Free!" }
+        if (!isLandingPage) {
+            return Pair(staticUrl, firstDoc)
+        }
+        val searchResults = getSearchResultSync(mangaName)
+        if (searchResults.isEmpty()) {
+            return Pair(staticUrl, firstDoc)
+        }
+        return getDocFromVariableUrl(
+            updateVariablePartInUrl(
+                getVariableChapterUrlPart(staticUrl),
+                getVariableChapterUrlPart(searchResults[0].url),
+                staticUrl
+            ), mangaName
+        )
+    }
+
+    private fun getChaptersSync(chapterMenuUrl: String, mangaName: String): List<ChapterResult> {
+        val (_, doc) = getDocFromVariableUrl(chapterMenuUrl, mangaName)
         return doc.select(".version-chap").select("li").map { chapterItem ->
             val chapterLink = chapterItem.select("a").first()
             ChapterResult(
@@ -34,59 +56,46 @@ class Muctau() : MangaSource() {
         }.reversed()
     }
 
+    private fun getSearchResultSync(searchterm: String): List<SearchResult> {
+        val doc =
+            Jsoup.connect("https://muctau.com/?s=$searchterm&post_type=wp-manga&post_type=wp-manga")
+                .referrer(refererUrl).get()
+        return doc.select(".c-tabs-item__content").map { searchItem ->
+            SearchResult(
+                name = searchItem.select(".post-title").select("a").text(),
+                coverUrl = searchItem.select(".c-image-hover").select("img")
+                    .attr("data-src"),
+                url = searchItem.select(".post-title").select("a").attr("href")
+            )
+        }
+    }
+
     override fun getSearchResult(
         searchterm: String,
         callback: (searchResults: List<SearchResult>) -> Unit
     ): Unit {
         AsyncWrapper {
-            val doc =
-                Jsoup.connect("https://muctau.com/?s=$searchterm&post_type=wp-manga&post_type=wp-manga")
-                    .referrer(refererUrl).get()
-            callback(
-                doc.select(".c-tabs-item__content").map { searchItem ->
-                    SearchResult(
-                        name = searchItem.select(".post-title").select("a").text(),
-                        coverUrl = searchItem.select(".c-image-hover").select("img")
-                            .attr("data-src"),
-                        url = searchItem.select(".post-title").select("a").attr("href")
-                    )
-                }
-            )
+            callback(getSearchResultSync(searchterm))
         }.execute()
     }
 
-    private fun getVariableChapterUrlPart(url: String): String{
+    private fun getVariableChapterUrlPart(url: String): String {
         val regex = "https:\\/\\/muctau\\.com\\/manga\\/(.*?)-".toRegex()
         val result = regex.find(url)
         val variablePart = result?.groups?.get(1)?.value
         return variablePart ?: ""
     }
 
-    private fun updateVariablePartInUrl(variableOld: String, variableNew: String, url: String): String{
+    private fun updateVariablePartInUrl(
+        variableOld: String,
+        variableNew: String,
+        url: String
+    ): String {
         return url.replace(variableOld, variableNew)
     }
 
-    private fun requestDoc(url: String): Document{
+    private fun requestDoc(url: String): Document {
         return Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
-    }
-
-    private fun getDoc(url: String): Pair<String, Document?> {
-        val initialVariableUrlPart = getVariableChapterUrlPart(url)
-        try {
-            val doc = requestDoc(url)
-            val validationUrl = doc.select("meta").find { it.attr("property") == "og:url" }?.attr("content")
-            val validationUrlVariablePart = getVariableChapterUrlPart(validationUrl?: "")
-            if(validationUrlVariablePart == initialVariableUrlPart){
-                return Pair(url, doc)
-            }
-            val newUrl = updateVariablePartInUrl(initialVariableUrlPart, validationUrlVariablePart, url)
-            val newDoc = requestDoc(newUrl)
-            return Pair(newUrl, newDoc)
-        } catch (
-            e: Exception
-        ) {
-            return Pair(url, null)
-        }
     }
 
     private fun cleanStringFromTabsAndReturns(value: String): String {
@@ -162,8 +171,8 @@ class Muctau() : MangaSource() {
         return "$cleanPageUrl#page=$nextPageCount"
     }
 
-    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String): PageResult {
-        val (url, doc) = getDoc(pageUrl)
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
+        val (url, doc) = getDocFromVariableUrl(pageUrl, mangaName)
         val parseResult = getCachedParsedPageData(url, doc)
         val pageCount = getPageCountFromUrl(pageUrl)
 

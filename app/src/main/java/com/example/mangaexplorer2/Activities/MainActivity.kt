@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var nextPageState = NextChapterState.UNAVAILABLE
         try {
             val nextPagePackage =
-                mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl)
+                mangaSource.getPageResultSync(favorite.currentPageUrl, favorite.chapterMenuUrl, favorite.mangaTitle)
             if (nextPagePackage.nextPageUrl != null) {
                 nextPageState = NextChapterState.AVAILABLE
             }
