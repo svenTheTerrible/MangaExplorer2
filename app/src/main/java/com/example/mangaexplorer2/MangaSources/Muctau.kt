@@ -29,7 +29,8 @@ class Muctau() : MangaSource() {
         val firstDoc = Jsoup.connect(staticUrl).referrer(refererUrl).get()
         val isLandingPage = firstDoc.select("meta")
             .any { it.attr("property") == "og:title" && it.attr("content") == "Read Manga Online for Free!" }
-        if (!isLandingPage) {
+        val isChapterPage = firstDoc.select(".version-chap").select("li").isNotEmpty()
+        if (!isLandingPage && !isChapterPage) {
             return Pair(staticUrl, firstDoc)
         }
         val searchResults = getSearchResultSync(mangaName)
