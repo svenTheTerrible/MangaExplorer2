@@ -25,11 +25,11 @@ class Muctau() : MangaSource() {
     }
 
 
-    private fun getDocFromVariableUrl(staticUrl: String, mangaName: String): Pair<String, Document> {
+    private fun getDocFromVariableUrl(staticUrl: String, mangaName: String, allowChapterMenu: Boolean): Pair<String, Document> {
         val firstDoc = Jsoup.connect(staticUrl).referrer(refererUrl).get()
         val isLandingPage = firstDoc.select("meta")
             .any { it.attr("property") == "og:title" && it.attr("content") == "Read Manga Online for Free!" }
-        val isChapterPage = firstDoc.select(".version-chap").select("li").isNotEmpty()
+        val isChapterPage = !allowChapterMenu && firstDoc.select(".version-chap").select("li").isNotEmpty()
         if (!isLandingPage && !isChapterPage) {
             return Pair(staticUrl, firstDoc)
         }
@@ -42,12 +42,13 @@ class Muctau() : MangaSource() {
                 getVariableChapterUrlPart(staticUrl),
                 getVariableChapterUrlPart(searchResults[0].url),
                 staticUrl
-            ), mangaName
+            ), mangaName,
+            allowChapterMenu
         )
     }
 
     private fun getChaptersSync(chapterMenuUrl: String, mangaName: String): List<ChapterResult> {
-        val (_, doc) = getDocFromVariableUrl(chapterMenuUrl, mangaName)
+        val (_, doc) = getDocFromVariableUrl(chapterMenuUrl, mangaName, true)
         return doc.select(".version-chap").select("li").map { chapterItem ->
             val chapterLink = chapterItem.select("a").first()
             ChapterResult(
@@ -173,7 +174,7 @@ class Muctau() : MangaSource() {
     }
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
-        val (url, doc) = getDocFromVariableUrl(pageUrl, mangaName)
+        val (url, doc) = getDocFromVariableUrl(pageUrl, mangaName, false)
         val parseResult = getCachedParsedPageData(url, doc)
         val pageCount = getPageCountFromUrl(pageUrl)
 
