@@ -10,7 +10,7 @@ class Muctau() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MUCTAU
 
-    override val refererUrl = "https://muctau.com"
+    override val refererUrl = "https://bibimanga.com"
 
     override val mangaPageCache: MutableMap<String, MangaPageCache> = mutableMapOf()
 
@@ -26,22 +26,23 @@ class Muctau() : MangaSource() {
 
 
     private fun getDocFromVariableUrl(staticUrl: String, mangaName: String, allowChapterMenu: Boolean): Pair<String, Document> {
-        val firstDoc = Jsoup.connect(staticUrl).referrer(refererUrl).get()
+        val bibiUrl = updateToBibiMangaUrl(staticUrl)
+        val firstDoc = Jsoup.connect(bibiUrl).referrer(refererUrl).get()
         val isLandingPage = firstDoc.select("meta")
             .any { it.attr("property") == "og:title" && it.attr("content") == "Read Manga Online for Free!" }
         val isChapterPage = !allowChapterMenu && firstDoc.select(".version-chap").select("li").isNotEmpty()
         if (!isLandingPage && !isChapterPage) {
-            return Pair(staticUrl, firstDoc)
+            return Pair(bibiUrl, firstDoc)
         }
         val searchResults = getSearchResultSync(mangaName)
         if (searchResults.isEmpty()) {
-            return Pair(staticUrl, firstDoc)
+            return Pair(bibiUrl, firstDoc)
         }
         return getDocFromVariableUrl(
             updateVariablePartInUrl(
-                getVariableChapterUrlPart(staticUrl),
+                getVariableChapterUrlPart(bibiUrl),
                 getVariableChapterUrlPart(searchResults[0].url),
-                staticUrl
+                bibiUrl
             ), mangaName,
             allowChapterMenu
         )
@@ -82,10 +83,14 @@ class Muctau() : MangaSource() {
     }
 
     private fun getVariableChapterUrlPart(url: String): String {
-        val regex = "https:\\/\\/muctau\\.com\\/manga\\/(.*?)-".toRegex()
+        val regex = "\\/manga\\/(\\D\\D\\D\\D\\D\\D)-".toRegex()
         val result = regex.find(url)
         val variablePart = result?.groups?.get(1)?.value
         return variablePart ?: ""
+    }
+
+    private fun updateToBibiMangaUrl(mangaUrl: String): String{
+        return mangaUrl.replace("https://muctau.com", "https://bibimanga.com")
     }
 
     private fun updateVariablePartInUrl(
