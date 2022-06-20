@@ -142,7 +142,7 @@ class Muctau() : MangaSource() {
         val selectedChapterName =
             if (selectedChapterIndex != null) chapterOptions[selectedChapterIndex].text() else null
         val nextChapterUrl =
-            if (selectedChapterIndex != null) chapterOptions[selectedChapterIndex - 1].attr("data-redirect") else null
+            if (selectedChapterIndex != null && selectedChapterIndex != 0) chapterOptions[selectedChapterIndex - 1].attr("data-redirect") else null
         val data = MangaPageCache(
             imageUrls,
             selectedChapterName,
