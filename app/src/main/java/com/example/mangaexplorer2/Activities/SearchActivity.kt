@@ -17,6 +17,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
+import com.example.mangaexplorer2.MangaSources.MangaKakalot
 import com.example.mangaexplorer2.MangaSources.MangaTown
 import com.example.mangaexplorer2.MangaSources.util.MangaSource
 import com.example.mangaexplorer2.MangaSources.util.SearchResult
@@ -37,7 +38,11 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         setMangaSource()
         val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, chapterToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this,
+            drawer_layout,
+            chapterToolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
@@ -109,6 +114,11 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 intent.putExtra("mangaSource", MangaTown())
                 startActivity(intent)
             }
+            R.id.mangasource_mangakakalot -> {
+                val intent = Intent(this, SearchActivity::class.java)
+                intent.putExtra("mangaSource", MangaKakalot())
+                startActivity(intent)
+            }
         }
 
         drawer_layout.closeDrawer(GravityCompat.START)
@@ -118,7 +128,8 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setMangaSource(): Unit {
         val extras = intent.extras ?: throw Error("extras is missing")
         mangaSource =
-            (extras.getSerializable("mangaSource") ?: throw Error("sourceName is missing")) as? MangaSource
+            (extras.getSerializable("mangaSource")
+                ?: throw Error("sourceName is missing")) as? MangaSource
                 ?: throw Error("Serializable is no MangaSource")
     }
 
@@ -140,7 +151,11 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     RecyclerView.VERTICAL,
                     false
                 )
-            searchResultRecyclerView.adapter = SearchResultListItemAdapter(searchResults, ::onClickSearchResult, mangaSource.refererUrl)
+            searchResultRecyclerView.adapter = SearchResultListItemAdapter(
+                searchResults,
+                ::onClickSearchResult,
+                mangaSource.refererUrl
+            )
         }
     }
 

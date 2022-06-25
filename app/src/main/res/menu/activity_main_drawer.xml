@@ -16,6 +16,10 @@
                     android:id="@+id/mangasource_mangatown"
                     android:icon="@drawable/globe"
                     android:title="Mangatown"/>
+            <item
+                    android:id="@+id/mangasource_mangakakalot"
+                    android:icon="@drawable/globe"
+                    android:title="Manga Kakalot"/>
         </menu>
     </item>
 

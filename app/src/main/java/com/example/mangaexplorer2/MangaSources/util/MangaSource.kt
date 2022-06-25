@@ -10,7 +10,8 @@ class SearchResult(val name: String, val url: String, val coverUrl: String): Ser
 class PageResult(val imageUrl: String?, val pageCount: Int?, val pageAmount: Int? , val chapterName: String?, val nextPageUrl: String?)
 
 enum class MangaSourceName{
-    MANGATOWN
+    MANGATOWN,
+    MANGAKAKALOT
 }
 
 class MangaPageCache(val images: List<String>?, val chapterName: String?, val pageAmount: Int?, val nextChapterUrl: String?)
