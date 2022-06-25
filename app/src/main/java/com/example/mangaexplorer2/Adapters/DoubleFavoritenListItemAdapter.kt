@@ -61,6 +61,8 @@ class DoubleFavoritenListItemAdapter(
         if (favorite == null) {
             holder.favoriteCardView.visibility = View.INVISIBLE
             return
+        }else{
+            holder.favoriteCardView.visibility = View.VISIBLE
         }
 
         val glideUrl = GlideUrl(
