@@ -270,16 +270,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 intent.putExtra("mangaSource", MangaTown())
                 startActivity(intent)
             }
-            R.id.mangasource_tenmanga -> {
-                val intent = Intent(this, SearchActivity::class.java)
-                intent.putExtra("mangaSource", TenManga())
-                startActivity(intent)
-            }
-            R.id.mangasource_muctau -> {
-                val intent = Intent(this, SearchActivity::class.java)
-                intent.putExtra("mangaSource", Muctau())
-                startActivity(intent)
-            }
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true

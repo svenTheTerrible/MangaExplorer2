@@ -18,7 +18,6 @@ import android.view.inputmethod.EditorInfo
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
 import com.example.mangaexplorer2.MangaSources.MangaTown
-import com.example.mangaexplorer2.MangaSources.TenManga
 import com.example.mangaexplorer2.MangaSources.util.MangaSource
 import com.example.mangaexplorer2.MangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
@@ -108,11 +107,6 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             R.id.mangasource_mangatown -> {
                 val intent = Intent(this, SearchActivity::class.java)
                 intent.putExtra("mangaSource", MangaTown())
-                startActivity(intent)
-            }
-            R.id.mangasource_tenmanga -> {
-                val intent = Intent(this, SearchActivity::class.java)
-                intent.putExtra("mangaSource", TenManga())
                 startActivity(intent)
             }
         }
