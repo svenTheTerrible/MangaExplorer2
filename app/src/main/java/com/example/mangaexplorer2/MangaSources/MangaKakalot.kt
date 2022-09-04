@@ -41,7 +41,8 @@ class MangaKakalot() : MangaSource() {
         callback: (searchResults: List<SearchResult>) -> Unit
     ): Unit {
         AsyncWrapper {
-            val doc = Jsoup.connect("https://mangakakalot.com/search/story/$searchterm")
+            val underscoreSearch = searchterm.replace(" ", "_")
+            val doc = Jsoup.connect("https://mangakakalot.com/search/story/$underscoreSearch")
                 .referrer(refererUrl).get()
             callback(
                 doc.select(".story_item").map { resultItem ->
