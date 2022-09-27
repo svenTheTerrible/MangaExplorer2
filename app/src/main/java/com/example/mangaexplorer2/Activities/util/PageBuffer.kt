@@ -3,6 +3,7 @@ package com.example.mangaexplorer2.Activities.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.os.Handler
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
@@ -65,9 +66,12 @@ class PageBuffer(
     }
 
     fun reloadFailedPage(callback: () -> Unit): Unit {
+        val handler = Handler()
         Thread(Runnable {
             loadPage(true)
-            callback()
+            handler.post{
+                callback()
+            }
         }).start()
     }
 
