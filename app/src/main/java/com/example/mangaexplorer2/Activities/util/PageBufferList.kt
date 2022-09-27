@@ -36,7 +36,7 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
         }
     }
 
-    fun getPageResult(pageUrl: String, callback: (pageResultBuffer: PageBufferResult?) -> Unit) {
+    fun getPageResult(pageUrl: String, callback: (pageResultBuffer: PageBuffer?) -> Unit) {
         val matchingEntry = pageBufferList.find { it.pageUrl == pageUrl } ?: return callback(null)
         val handler = Handler()
         Thread(Runnable {
@@ -44,7 +44,7 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
                 Thread.sleep(1000)
             }
             handler.post {
-                callback(matchingEntry.getResult())
+                callback(matchingEntry)
             }
         }).start()
     }

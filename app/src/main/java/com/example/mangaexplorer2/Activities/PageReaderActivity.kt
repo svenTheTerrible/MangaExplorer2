@@ -12,11 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.widget.LinearLayout
-import com.example.mangaexplorer2.Activities.util.PageBufferList
-import com.example.mangaexplorer2.Activities.util.PageBufferResult
-import com.example.mangaexplorer2.Activities.util.PageLoadingError
-import com.example.mangaexplorer2.Activities.util.PageLoadingState
 import com.example.mangaexplorer2.Adapters.MultiImageViewAdapter
 import com.example.mangaexplorer2.MangaSources.util.*
 import com.example.mangaexplorer2.Models.FavoriteItem
@@ -30,6 +25,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import com.example.mangaexplorer2.Activities.util.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_web_view.*
 
 
@@ -114,56 +111,72 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }
     }
 
-    private fun updateImageView(pageBufferResult: PageBufferResult?) {
+    private fun updateImageView(pageBuffer: PageBuffer?) {
         progressBar.visibility = View.GONE
-        errorText.text = ""
-        if (pageBufferResult == null) {
+        errorContainer.visibility = View.GONE
+        if (pageBuffer == null) {
             return
         }
-        val pageResult = pageBufferResult.pageResult
-        when (pageBufferResult.loadingStatus) {
-            PageLoadingState.LOADED -> renderSuccessfullImage(pageBufferResult)
-            else -> renderErrorOptions(pageBufferResult)
+        val result = pageBuffer.getResult()
+        val pageResult = result.pageResult
+        when (result.loadingStatus) {
+            PageLoadingState.LOADED -> renderSuccessfullImage(result)
+            else -> renderErrorOptions(pageBuffer)
         }
         chapterNameTextView.text = pageResult?.chapterName ?: ""
         pageCountTextView.text =
             (pageResult?.pageCount?.toString() ?: "") + "/" + (pageResult?.pageAmount?.toString()
                 ?: "")
-        if (pageBufferResult.imageBitmap.size > 1) {
-            renderBitmapList(pageBufferResult.imageBitmap)
-        } else if (pageBufferResult.imageBitmap.size == 1) {
-            renderBitmap(pageBufferResult.imageBitmap[0])
+        if (result.imageBitmap.size > 1) {
+            renderBitmapList(result.imageBitmap)
+        } else if (result.imageBitmap.size == 1) {
+            renderBitmap(result.imageBitmap[0])
         }
-        this.currentPageResult = pageBufferResult
+        this.currentPageResult = result
     }
 
-    private fun renderErrorOptions(pageBufferResult: PageBufferResult) {
+    private fun initReloadButton(pageBuffer: PageBuffer): Unit {
+        reloadButton.setOnClickListener { _ ->
+            progressBar.visibility = View.VISIBLE
+            errorContainer.visibility = View.GONE
+            pageBuffer.reloadFailedPage {
+                updateImageView(pageBuffer)
+            }
+        }
+    }
+
+    private fun renderErrorOptions(pageBuffer: PageBuffer) {
+        val result = pageBuffer.getResult()
+        errorContainer.visibility = View.VISIBLE
         singleImageView.visibility = View.INVISIBLE
         multiImageView.visibility = View.INVISIBLE
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        if (pageBufferResult.errorType === PageLoadingError.IMAGE_NOT_LOADING && pageBufferResult.pageResult?.imageUrl == null) {
+        if (result.errorType === PageLoadingError.IMAGE_NOT_LOADING && result.pageResult?.imageUrl == null) {
             errorText.text =
-                "Image is broken"
-            val clip = ClipData.newPlainText("", pageBufferResult.pageUrl)
+                "Image link could not be fetched"
+            val clip = ClipData.newPlainText("", pageBuffer.pageUrl)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(applicationContext, "PageUrl copied", Toast.LENGTH_SHORT).show()
+            initReloadButton(pageBuffer)
             return
         }
 
-        if (pageBufferResult.errorType === PageLoadingError.IMAGE_NOT_LOADING) {
+        if (result.errorType === PageLoadingError.IMAGE_NOT_LOADING) {
             errorText.text =
-                "Could not load image link -> imageUrl: '${pageBufferResult.pageResult?.imageUrl}'"
-            val clip = ClipData.newPlainText("", pageBufferResult.pageResult?.imageUrl)
+                "Could not load image link -> imageUrl: '${result.pageResult?.imageUrl}'"
+            val clip = ClipData.newPlainText("", result.pageResult?.imageUrl)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(applicationContext, "ImageUrl copied", Toast.LENGTH_SHORT).show()
+            initReloadButton(pageBuffer)
             return
         }
 
-        if (pageBufferResult.errorType === PageLoadingError.PAGE_NOT_LOADING) {
-            errorText.text = "Page did not load -> pageUrl: '${pageBufferResult.pageUrl}'"
-            val clip = ClipData.newPlainText("", pageBufferResult.pageUrl)
+        if (result.errorType === PageLoadingError.PAGE_NOT_LOADING) {
+            errorText.text = "Page did not load -> pageUrl: '${pageBuffer.pageUrl}'"
+            val clip = ClipData.newPlainText("", pageBuffer.pageUrl)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(applicationContext, "PageUrl copied", Toast.LENGTH_SHORT).show()
+            initReloadButton(pageBuffer)
             return
         }
     }

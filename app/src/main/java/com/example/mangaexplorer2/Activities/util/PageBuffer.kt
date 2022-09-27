@@ -13,23 +13,37 @@ import com.example.mangaexplorer2.MangaSources.util.MangaSource
 import com.example.mangaexplorer2.MangaSources.util.PageResult
 import java.lang.Exception
 
-enum class PageLoadingState{
+enum class PageLoadingState {
     IS_LOADING,
     LOADED,
     FAILED_TO_LOAD
 }
 
-enum class PageLoadingError{
+enum class PageLoadingError {
     PAGE_NOT_LOADING,
     IMAGE_NOT_LOADING
 }
 
-data class PageBufferResult(val loadingStatus: PageLoadingState, val errorType: PageLoadingError?, val pageResult: PageResult?, val imageBitmap: List<Bitmap>, val pageUrl: String)
+data class PageBufferResult(
+    val loadingStatus: PageLoadingState,
+    val errorType: PageLoadingError?,
+    val pageResult: PageResult?,
+    val imageBitmap: List<Bitmap>,
+    val pageUrl: String
+)
 
 
 val MAX_LOADING_TRIES = 5
 
-class PageBuffer(val timestamp: Long, private val context: Context, private val mangaSource: MangaSource, val pageUrl: String, private val chapterMenuUrl: String, private val mangaName: String, private val nextPageCallback:(nextPageUrl: String?)->Unit){
+class PageBuffer(
+    val timestamp: Long,
+    private val context: Context,
+    private val mangaSource: MangaSource,
+    val pageUrl: String,
+    private val chapterMenuUrl: String,
+    private val mangaName: String,
+    private val nextPageCallback: (nextPageUrl: String?) -> Unit
+) {
     private var loadingStatus: PageLoadingState =
         PageLoadingState.IS_LOADING
     private var errorType: PageLoadingError? = null
@@ -50,40 +64,53 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
         )
     }
 
-    private fun tryMultiplePageLoads():PageResult?{
+    fun reloadFailedPage(callback: () -> Unit): Unit {
+        Thread(Runnable {
+            loadPage(true)
+            callback()
+        }).start()
+    }
+
+    private fun tryMultiplePageLoads(): PageResult? {
         var loadingTry = 0
         var pageResult: PageResult? = null
-        while (loadingTry < MAX_LOADING_TRIES && pageResult == null){
-            try{
+        while (loadingTry < MAX_LOADING_TRIES && pageResult == null) {
+            try {
                 pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl, mangaName)
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 loadingTry += 1
+                Thread.sleep(1000)
             }
 
         }
         return pageResult
     }
 
-    private fun loadPage() {
+    private fun loadPage(noCallback: Boolean = false) {
         pageResult = tryMultiplePageLoads()
-        if(pageResult == null){
+        if (pageResult == null) {
             errorType = PageLoadingError.PAGE_NOT_LOADING
             loadingStatus = PageLoadingState.FAILED_TO_LOAD
-            nextPageCallback(null)
+            if (!noCallback) {
+                nextPageCallback(null)
+            }
             return
         }
         imageUrlToBitmapList()
     }
 
-    private fun imageUrlToBitmapList(tryCount: Int = 0){
+    private fun imageUrlToBitmapList(tryCount: Int = 0) {
         val imageUrl = pageResult?.imageUrl
-        if(imageUrl == null){
+        if (imageUrl == null) {
             errorType = PageLoadingError.IMAGE_NOT_LOADING
             loadingStatus = PageLoadingState.FAILED_TO_LOAD
             return
         }
 
-        val glideUrl = GlideUrl(imageUrl, LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build())
+        val glideUrl = GlideUrl(
+            imageUrl,
+            LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build()
+        )
 
         GlideApp.with(context)
             .asBitmap()
@@ -93,8 +120,8 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
             .into(object : CustomTarget<Bitmap>() {
                 override fun onLoadFailed(errorDrawable: Drawable?) {
                     super.onLoadFailed(errorDrawable)
-                    if(tryCount < MAX_LOADING_TRIES){
-                        imageUrlToBitmapList(tryCount +1)
+                    if (tryCount < MAX_LOADING_TRIES) {
+                        imageUrlToBitmapList(tryCount + 1)
                         return
                     }
                     errorType = PageLoadingError.IMAGE_NOT_LOADING
@@ -124,7 +151,15 @@ class PageBuffer(val timestamp: Long, private val context: Context, private val 
         while (processedHeight < origHeight) {
             val restHeight = origHeight - processedHeight
             val heightToUse = if (restHeight < chunkHeight) restHeight else chunkHeight
-            bitmaps.add(Bitmap.createBitmap(origBitmap, 0, processedHeight, origBitmap.width, heightToUse))
+            bitmaps.add(
+                Bitmap.createBitmap(
+                    origBitmap,
+                    0,
+                    processedHeight,
+                    origBitmap.width,
+                    heightToUse
+                )
+            )
             processedHeight += chunkHeight
         }
         return bitmaps
