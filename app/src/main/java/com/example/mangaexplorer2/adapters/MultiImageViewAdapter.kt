@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.Adapters
+package com.example.mangaexplorer2.adapters
 
 import android.graphics.Bitmap
 import androidx.recyclerview.widget.RecyclerView

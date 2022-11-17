@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.Models
+package com.example.mangaexplorer2.models
 
 enum class NextChapterState {
     UNAVAILABLE, AVAILABLE, ERROR

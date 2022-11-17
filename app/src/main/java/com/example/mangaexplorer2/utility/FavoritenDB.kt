@@ -1,9 +1,9 @@
-package com.example.mangaexplorer2.Utility
+package com.example.mangaexplorer2.utility
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import com.example.mangaexplorer2.Models.FavoriteItem
-import com.example.mangaexplorer2.Models.NextChapterState
+import com.example.mangaexplorer2.models.FavoriteItem
+import com.example.mangaexplorer2.models.NextChapterState
 
 private var favoriteDb: FavoritenDB? = null
 

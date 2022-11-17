@@ -1,6 +1,8 @@
-package com.example.mangaexplorer2.MangaSources
+package com.example.mangaexplorer2.mangaSources
 
-import com.example.mangaexplorer2.MangaSources.util.*
+import android.os.Handler
+import android.os.Looper
+import com.example.mangaexplorer2.mangaSources.util.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -19,10 +21,14 @@ class MangaKakalot() : MangaSource() {
         chapterMenuUrl: String,
         mangaName: String,
         callback: (chapters: List<ChapterResult>) -> Unit
-    ): Unit {
-        AsyncWrapper {
-            callback(getChaptersSync(chapterMenuUrl))
-        }.execute()
+    ) {
+        val handler = Handler(Looper.getMainLooper())
+        Thread {
+            val chapters = getChaptersSync(chapterMenuUrl)
+            handler.post {
+                callback(chapters)
+            }
+        }.start()
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
@@ -40,20 +46,24 @@ class MangaKakalot() : MangaSource() {
         searchterm: String,
         callback: (searchResults: List<SearchResult>) -> Unit
     ): Unit {
-        AsyncWrapper {
+        val handler = Handler(Looper.getMainLooper())
+        Thread {
             val underscoreSearch = searchterm.replace(" ", "_")
             val doc = Jsoup.connect("https://mangakakalot.com/search/story/$underscoreSearch")
                 .referrer(refererUrl).get()
-            callback(
-                doc.select(".story_item").map { resultItem ->
-                    SearchResult(
-                        name = resultItem.select(".story_name").select("a").text(),
-                        coverUrl = resultItem.select("a").first().select("img").attr("src"),
-                        url = resultItem.select(".story_name").select("a").attr("href")
-                    )
-                }
-            )
-        }.execute()
+            val searchResults = doc.select(".story_item").map { resultItem ->
+                SearchResult(
+                    name = resultItem.select(".story_name").select("a").text(),
+                    coverUrl = resultItem.select("a").first().select("img").attr("src"),
+                    url = resultItem.select(".story_name").select("a").attr("href")
+                )
+            }
+            handler.post {
+                callback(
+                    searchResults
+                )
+            }
+        }.start()
     }
 
     private fun getDoc(url: String): Document? {
@@ -128,11 +138,14 @@ class MangaKakalot() : MangaSource() {
         val data = getCachedPageData(pageUrl)
         val pageCount = getPageCountFromUrl(pageUrl)
         val nextImageUrl = data?.images?.getOrNull(pageCount)
-        val nextPageUrl = if(nextImageUrl != null) generateNextPageUrl(pageUrl, pageCount) else data.nextChapterUrl
+        val nextPageUrl = if (nextImageUrl != null) generateNextPageUrl(
+            pageUrl,
+            pageCount
+        ) else data.nextChapterUrl
 
 
         return PageResult(
-            imageUrl = data?.images?.get(pageCount -1),
+            imageUrl = data?.images?.get(pageCount - 1),
             chapterName = data.chapterName,
             pageAmount = data.pageAmount,
             pageCount = pageCount,

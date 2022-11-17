@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/app_bar_main"
-        tools:context=".Activities.MainActivity" android:paddingTop="10dp" android:background="@color/greyBackground">
+        tools:context=".activities.MainActivity" android:paddingTop="10dp" android:background="@color/greyBackground">
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:id="@+id/favoritenRecyclerView"

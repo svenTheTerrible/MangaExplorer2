@@ -1,6 +1,8 @@
-package com.example.mangaexplorer2.MangaSources
+package com.example.mangaexplorer2.mangaSources
 
-import com.example.mangaexplorer2.MangaSources.util.*
+import android.os.Handler
+import android.os.Looper
+import com.example.mangaexplorer2.mangaSources.util.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -18,10 +20,14 @@ class MangaTown() : MangaSource() {
         chapterMenuUrl: String,
         mangaName: String,
         callback: (chapters: List<ChapterResult>) -> Unit
-    ): Unit {
-        AsyncWrapper {
-            callback(getChaptersSync(chapterMenuUrl))
-        }.execute()
+    ) {
+        val handler = Handler(Looper.getMainLooper())
+        Thread {
+            val chapters = getChaptersSync(chapterMenuUrl)
+            handler.post {
+                callback(chapters)
+            }
+        }.start()
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
@@ -36,27 +42,29 @@ class MangaTown() : MangaSource() {
 
     private fun repairUrl(url: String): String {
         if (url.contains("mangatown.com")) {
-            return "https:" + url
+            return "https:$url"
         }
-        return "https://www.mangatown.com" + url;
+        return "https://www.mangatown.com$url";
     }
 
     override fun getSearchResult(
         searchterm: String,
         callback: (searchResults: List<SearchResult>) -> Unit
-    ): Unit {
-        AsyncWrapper {
+    ) {
+        val handler = Handler(Looper.getMainLooper())
+        Thread {
             val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer(refererUrl).get()
-            callback(
-                doc.select(".manga_cover").map { resultItem ->
-                    SearchResult(
-                        name = resultItem.attr("title"),
-                        coverUrl = resultItem.getElementsByTag("img").attr("src"),
-                        url = repairUrl(resultItem.attr("href"))
-                    )
-                }
-            )
-        }.execute()
+            val searchResults = doc.select(".manga_cover").map { resultItem ->
+                SearchResult(
+                    name = resultItem.attr("title"),
+                    coverUrl = resultItem.getElementsByTag("img").attr("src"),
+                    url = repairUrl(resultItem.attr("href"))
+                )
+            }
+            handler.post {
+                callback(searchResults)
+            }
+        }.start()
     }
 
     private fun repairImageUrl(url: String?): String? {

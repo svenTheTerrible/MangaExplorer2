@@ -1,6 +1,5 @@
-package com.example.mangaexplorer2.Adapters
+package com.example.mangaexplorer2.adapters
 
-import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +12,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.util.SearchResult
+import com.example.mangaexplorer2.mangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
 
 

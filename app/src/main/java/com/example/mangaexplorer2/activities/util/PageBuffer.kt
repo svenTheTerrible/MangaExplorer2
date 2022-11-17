@@ -1,17 +1,18 @@
-package com.example.mangaexplorer2.Activities.util
+package com.example.mangaexplorer2.activities.util
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Handler
+import android.os.Looper
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.util.MangaSource
-import com.example.mangaexplorer2.MangaSources.util.PageResult
+import com.example.mangaexplorer2.mangaSources.util.MangaSource
+import com.example.mangaexplorer2.mangaSources.util.PageResult
 import java.lang.Exception
 
 enum class PageLoadingState {
@@ -66,13 +67,13 @@ class PageBuffer(
     }
 
     fun reloadFailedPage(callback: () -> Unit): Unit {
-        val handler = Handler()
-        Thread(Runnable {
+        val handler = Handler(Looper.getMainLooper())
+        Thread {
             loadPage(true)
-            handler.post{
+            handler.post {
                 callback()
             }
-        }).start()
+        }.start()
     }
 
     private fun tryMultiplePageLoads(): PageResult? {

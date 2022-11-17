@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.Utility
+package com.example.mangaexplorer2.utility
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

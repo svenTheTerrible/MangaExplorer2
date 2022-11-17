@@ -1,8 +1,6 @@
-package com.example.mangaexplorer2.Adapters
+package com.example.mangaexplorer2.adapters
 
 import android.content.Context
-import android.net.Uri
-import android.opengl.Visibility
 import androidx.core.content.ContextCompat
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
@@ -12,14 +10,13 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.example.mangaexplorer2.GlideApp
-import com.example.mangaexplorer2.MangaSources.util.SourceRegister
-import com.example.mangaexplorer2.Models.FavoriteItem
-import com.example.mangaexplorer2.Models.NextChapterState
+import com.example.mangaexplorer2.mangaSources.util.SourceRegister
+import com.example.mangaexplorer2.models.FavoriteItem
+import com.example.mangaexplorer2.models.NextChapterState
 import com.example.mangaexplorer2.R
 
 

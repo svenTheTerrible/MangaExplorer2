@@ -1,4 +1,4 @@
-package com.example.mangaexplorer2.Activities
+package com.example.mangaexplorer2.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,40 +16,42 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mangaexplorer2.Adapters.SearchResultListItemAdapter
-import com.example.mangaexplorer2.MangaSources.MangaKakalot
-import com.example.mangaexplorer2.MangaSources.MangaTown
-import com.example.mangaexplorer2.MangaSources.util.MangaSource
-import com.example.mangaexplorer2.MangaSources.util.SearchResult
+import com.example.mangaexplorer2.adapters.SearchResultListItemAdapter
+import com.example.mangaexplorer2.mangaSources.MangaKakalot
+import com.example.mangaexplorer2.mangaSources.MangaTown
+import com.example.mangaexplorer2.mangaSources.util.MangaSource
+import com.example.mangaexplorer2.mangaSources.util.SearchResult
 import com.example.mangaexplorer2.R
-import kotlinx.android.synthetic.main.activity_search_actitiy.*
-import kotlinx.android.synthetic.main.app_bar_search_actitiy.*
-import kotlinx.android.synthetic.main.content_search_actitiy.*
+import com.example.mangaexplorer2.databinding.ActivitySearchActitiyBinding
+import com.example.mangaexplorer2.databinding.AppBarSearchActitiyBinding
+import com.example.mangaexplorer2.databinding.ContentSearchActitiyBinding
 
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
+    private lateinit var activityBinding: ActivitySearchActitiyBinding;
+    private lateinit var barBinding: AppBarSearchActitiyBinding;
+    private lateinit var contentBinding: ContentSearchActitiyBinding;
     private var searchText: String = ""
     private lateinit var mangaSource: MangaSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search_actitiy)
-        setSupportActionBar(chapterToolbar)
-
+        activityBinding = ActivitySearchActitiyBinding.inflate(layoutInflater)
+        barBinding = AppBarSearchActitiyBinding.inflate(layoutInflater)
+        contentBinding = ContentSearchActitiyBinding.inflate(layoutInflater)
+        setContentView(activityBinding.root)
+        setSupportActionBar(barBinding.chapterToolbar)
         setMangaSource()
         val toggle = ActionBarDrawerToggle(
             this,
-            drawer_layout,
-            chapterToolbar,
+            activityBinding.drawerLayout,
+            barBinding.chapterToolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        drawer_layout.addDrawerListener(toggle)
+        activityBinding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-
-        nav_view.setNavigationItemSelectedListener(this)
-
-        searchEditText.addTextChangedListener(object : TextWatcher {
+        activityBinding.navView.setNavigationItemSelectedListener(this)
+        contentBinding.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 searchText = p0.toString();
             }
@@ -61,7 +63,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         })
 
-        searchEditText.setOnEditorActionListener { _, actionId, keyEvent ->
+        contentBinding.searchEditText.setOnEditorActionListener { _, actionId, keyEvent ->
 
             val enterKeydown =
                 keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == ACTION_DOWN
@@ -79,8 +81,8 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
+        if (activityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -96,15 +98,15 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
-        //todo add way to switch between mangasources, best is to keep ative search
+        //todo add way to switch between mangasources, best is to keep active search
         when (item.itemId) {
             R.id.nav_favorites -> {
                 startActivity(Intent(this, MainActivity::class.java))
@@ -121,7 +123,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         }
 
-        drawer_layout.closeDrawer(GravityCompat.START)
+        activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -134,29 +136,28 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun updateSearchResults(searchResults: List<SearchResult>, isLoading: Boolean): Unit {
-        this@SearchActivity.runOnUiThread {
-            searchProgressBar.visibility = if (isLoading) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-            emptySearchText.visibility = if (searchResults.size > 0 || isLoading) {
-                View.GONE
-            } else {
-                View.VISIBLE
-            }
-            searchResultRecyclerView.layoutManager =
-                LinearLayoutManager(
-                    this,
-                    RecyclerView.VERTICAL,
-                    false
-                )
-            searchResultRecyclerView.adapter = SearchResultListItemAdapter(
-                searchResults,
-                ::onClickSearchResult,
-                mangaSource.refererUrl
-            )
+        contentBinding.searchProgressBar.visibility = if (isLoading) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
+        contentBinding.emptySearchText.visibility = if (searchResults.isNotEmpty() || isLoading) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+        contentBinding.searchResultRecyclerView.layoutManager =
+            LinearLayoutManager(
+                this,
+                RecyclerView.VERTICAL,
+                false
+            )
+        contentBinding.searchResultRecyclerView.adapter = SearchResultListItemAdapter(
+            searchResults,
+            ::onClickSearchResult,
+            mangaSource.refererUrl
+        )
+
     }
 
     private fun onClickSearchResult(searchResult: SearchResult): Unit {
@@ -168,8 +169,8 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun runSearch(searchterm: String) {
         updateSearchResults(emptyList(), true)
-        mangaSource.getSearchResult(searchterm, { searchResult ->
+        mangaSource.getSearchResult(searchterm) { searchResult ->
             updateSearchResults(searchResult, false)
-        })
+        }
     }
 }

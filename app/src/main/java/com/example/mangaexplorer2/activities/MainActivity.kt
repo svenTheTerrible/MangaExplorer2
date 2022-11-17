@@ -1,39 +1,45 @@
-package com.example.mangaexplorer2.Activities
+package com.example.mangaexplorer2.activities
 
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Insets
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
-import androidx.core.view.GravityCompat
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import android.os.Looper
+import android.util.DisplayMetrics
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.LinearLayout
-import com.example.mangaexplorer2.Models.FavoriteItem
-import com.example.mangaexplorer2.Adapters.FavoritenListItemAdapter
-import com.example.mangaexplorer2.MangaSources.*
-import com.example.mangaexplorer2.MangaSources.util.*
-import com.example.mangaexplorer2.Models.NextChapterState
-import com.example.mangaexplorer2.R
-import com.example.mangaexplorer2.Utility.FavoritenDB
-import com.example.mangaexplorer2.Utility.closeFavoriteDbInstance
-import com.example.mangaexplorer2.Utility.getFavoriteDbInstance
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import android.util.DisplayMetrics
+import android.view.WindowInsets
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mangaexplorer2.Adapters.DoubleFavoritenListItemAdapter
+import com.example.mangaexplorer2.R
+import com.example.mangaexplorer2.adapters.DoubleFavoritenListItemAdapter
+import com.example.mangaexplorer2.adapters.FavoritenListItemAdapter
+import com.example.mangaexplorer2.databinding.ActivityMainBinding
+import com.example.mangaexplorer2.databinding.AppBarMainBinding
+import com.example.mangaexplorer2.databinding.ContentMainBinding
+import com.example.mangaexplorer2.mangaSources.*
+import com.example.mangaexplorer2.mangaSources.util.*
+import com.example.mangaexplorer2.models.FavoriteItem
+import com.example.mangaexplorer2.models.NextChapterState
+import com.example.mangaexplorer2.utility.FavoritenDB
+import com.example.mangaexplorer2.utility.closeFavoriteDbInstance
+import com.example.mangaexplorer2.utility.getFavoriteDbInstance
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 
-import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private lateinit var activityBinding: ActivityMainBinding;
+    private lateinit var appBarBinding: AppBarMainBinding;
+    private lateinit var contentBinding: ContentMainBinding;
+
 
     private var favoriteItems: List<FavoriteItem> = emptyList()
     private lateinit var favoritenDB: FavoritenDB
@@ -42,23 +48,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(chapterToolbar)
+        activityBinding = ActivityMainBinding.inflate(layoutInflater)
+        appBarBinding = AppBarMainBinding.inflate(layoutInflater)
+        contentBinding = ContentMainBinding.inflate(layoutInflater)
+        setContentView(activityBinding.root)
+        setSupportActionBar(appBarBinding.chapterToolbar)
 
-        fab.setOnClickListener { view ->
+        appBarBinding.fab.setOnClickListener { view ->
             if (!isCheckingForUpdates) {
                 checkForNewChapters(view)
             }
         }
 
         val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, chapterToolbar,
+            this, activityBinding.drawerLayout, appBarBinding.chapterToolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        drawer_layout.addDrawerListener(toggle)
+        activityBinding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-        nav_view.setNavigationItemSelectedListener(this)
+        activityBinding.navView.setNavigationItemSelectedListener(this)
         favoritenDB = getFavoriteDbInstance(applicationContext)
         updateFavoriteList()
     }
@@ -93,19 +102,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun updateNewChapterFab(): Unit {
         if (isCheckingForUpdates) {
-            fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
-            fab.isEnabled = false
+            appBarBinding.fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
+            appBarBinding.fab.isEnabled = false
         } else {
-            fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
-            fab.isEnabled = true
+            appBarBinding.fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
+            appBarBinding.fab.isEnabled = true
         }
     }
 
     private fun checkForNewChapters(view: View): Unit {
-        val handler = Handler()
+        val handler = Handler(Looper.getMainLooper())
         isCheckingForUpdates = true
         updateNewChapterFab()
-        Thread(Runnable {
+        Thread {
             val updatedFavorites = favoriteItems.map {
                 val updatedItem = checkFavoriteForUpdate(it)
                 favoritenDB.setChapterAvailable(
@@ -129,7 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 updateNewChapterFab()
                 updateFavoriteList()
             }
-        }).start()
+        }.start()
     }
 
     private fun bundleBy2(favorites: List<FavoriteItem>): List<Pair<FavoriteItem, FavoriteItem?>> {
@@ -140,15 +149,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return packedFavoriteItems;
     }
 
+    private fun getScreenWidth(): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowMetrics = this.windowManager.currentWindowMetrics
+            val insets: Insets = windowMetrics.windowInsets
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+            windowMetrics.bounds.width() - insets.left - insets.right
+        } else {
+            val displayMetrics = DisplayMetrics()
+            this.windowManager.defaultDisplay.getMetrics(displayMetrics)
+            displayMetrics.widthPixels
+        }
+    }
+
     private fun updateFavoriteList(): Unit {
         val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val width = displayMetrics.widthPixels / displayMetrics.scaledDensity
-
+        val width = getScreenWidth() / displayMetrics.scaledDensity
         favoriteItems = favoritenDB.getFavorites().sortedBy { item -> item.hasNewChapter }.reversed()
-
-
-        favoritenRecyclerView.layoutManager =
+        contentBinding.favoritenRecyclerView.layoutManager =
             LinearLayoutManager(
                 this,
                 RecyclerView.VERTICAL,
@@ -157,7 +175,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         if (width > 500) {
             val bundledFavoriteItems = bundleBy2(favoriteItems)
-            favoritenRecyclerView.adapter =
+            contentBinding.favoritenRecyclerView.adapter =
                 DoubleFavoritenListItemAdapter(
                     bundledFavoriteItems,
                     ::onClickFavoriteItems,
@@ -166,7 +184,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return;
         }
 
-        favoritenRecyclerView.adapter =
+        contentBinding.favoritenRecyclerView.adapter =
             FavoritenListItemAdapter(
                 favoriteItems,
                 ::onClickFavoriteItems,
@@ -196,9 +214,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun openFavoriteMenu(favoriteItem: FavoriteItem): Unit {
         val builder = AlertDialog.Builder(this)
-        val inflater = this.layoutInflater
 
-        builder.setItems(listOf<String>("Kapitelmenü", "Defavorisieren").toTypedArray(), DialogInterface.OnClickListener(fun (dialogInterface: DialogInterface, index: Int):Unit {
+        builder.setItems(listOf<String>("Kapitelmenü", "Defavorisieren").toTypedArray(), DialogInterface.OnClickListener(fun (
+            _: DialogInterface, index: Int):Unit {
             when (index) {
                 0 -> openToChapterMenu(favoriteItem)
                 1 -> {
@@ -216,7 +234,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
-
         val intent = Intent(this, PageReaderActivity::class.java)
         intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
         intent.putExtra(
@@ -236,8 +253,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
+        if (activityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -253,9 +270,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -276,7 +293,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(intent)
             }
         }
-        drawer_layout.closeDrawer(GravityCompat.START)
+        activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 }

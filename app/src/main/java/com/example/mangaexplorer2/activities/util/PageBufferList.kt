@@ -1,8 +1,8 @@
-package com.example.mangaexplorer2.Activities.util
+package com.example.mangaexplorer2.activities.util
 
 import android.content.Context
 import android.os.Handler
-import com.example.mangaexplorer2.MangaSources.util.MangaSource
+import com.example.mangaexplorer2.mangaSources.util.MangaSource
 
 class PageBufferList(private val context: Context, private val pageBufferSize: Int) {
     private var pageBufferList = mutableListOf<PageBuffer>()

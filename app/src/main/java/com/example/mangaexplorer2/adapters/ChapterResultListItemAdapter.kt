@@ -1,11 +1,11 @@
-package com.example.mangaexplorer2.Adapters
+package com.example.mangaexplorer2.adapters
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import com.example.mangaexplorer2.MangaSources.util.ChapterResult
+import com.example.mangaexplorer2.mangaSources.util.ChapterResult
 import com.example.mangaexplorer2.R
 
 

@@ -1,7 +1,7 @@
-package com.example.mangaexplorer2.MangaSources.util
+package com.example.mangaexplorer2.mangaSources.util
 
-import com.example.mangaexplorer2.MangaSources.MangaKakalot
-import com.example.mangaexplorer2.MangaSources.MangaTown
+import com.example.mangaexplorer2.mangaSources.MangaKakalot
+import com.example.mangaexplorer2.mangaSources.MangaTown
 
 class SourceRegister {
     private val sources: List<MangaSource> = listOf(MangaTown(), MangaKakalot())
