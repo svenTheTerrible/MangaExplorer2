@@ -27,31 +27,27 @@ import com.example.mangaexplorer2.databinding.AppBarSearchActitiyBinding
 import com.example.mangaexplorer2.databinding.ContentSearchActitiyBinding
 
 class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var activityBinding: ActivitySearchActitiyBinding;
-    private lateinit var barBinding: AppBarSearchActitiyBinding;
-    private lateinit var contentBinding: ContentSearchActitiyBinding;
+    private lateinit var binding: ActivitySearchActitiyBinding;
     private var searchText: String = ""
     private lateinit var mangaSource: MangaSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityBinding = ActivitySearchActitiyBinding.inflate(layoutInflater)
-        barBinding = AppBarSearchActitiyBinding.inflate(layoutInflater)
-        contentBinding = ContentSearchActitiyBinding.inflate(layoutInflater)
-        setContentView(activityBinding.root)
-        setSupportActionBar(barBinding.chapterToolbar)
+        binding = ActivitySearchActitiyBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.incldueAppBar.chapterToolbar)
         setMangaSource()
         val toggle = ActionBarDrawerToggle(
             this,
-            activityBinding.drawerLayout,
-            barBinding.chapterToolbar,
+            binding.drawerLayout,
+            binding.incldueAppBar.chapterToolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        activityBinding.drawerLayout.addDrawerListener(toggle)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-        activityBinding.navView.setNavigationItemSelectedListener(this)
-        contentBinding.searchEditText.addTextChangedListener(object : TextWatcher {
+        binding.navView.setNavigationItemSelectedListener(this)
+        binding.incldueAppBar.includeContent.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 searchText = p0.toString();
             }
@@ -63,8 +59,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         })
 
-        contentBinding.searchEditText.setOnEditorActionListener { _, actionId, keyEvent ->
-
+        binding.incldueAppBar.includeContent.searchEditText.setOnEditorActionListener { _, actionId, keyEvent ->
             val enterKeydown =
                 keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == ACTION_DOWN
 
@@ -81,8 +76,8 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     override fun onBackPressed() {
-        if (activityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -123,7 +118,7 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         }
 
-        activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -136,23 +131,23 @@ class SearchActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun updateSearchResults(searchResults: List<SearchResult>, isLoading: Boolean): Unit {
-        contentBinding.searchProgressBar.visibility = if (isLoading) {
+        binding.incldueAppBar.includeContent.searchProgressBar.visibility = if (isLoading) {
             View.VISIBLE
         } else {
             View.GONE
         }
-        contentBinding.emptySearchText.visibility = if (searchResults.isNotEmpty() || isLoading) {
+        binding.incldueAppBar.includeContent.emptySearchText.visibility = if (searchResults.isNotEmpty() || isLoading) {
             View.GONE
         } else {
             View.VISIBLE
         }
-        contentBinding.searchResultRecyclerView.layoutManager =
+        binding.incldueAppBar.includeContent.searchResultRecyclerView.layoutManager =
             LinearLayoutManager(
                 this,
                 RecyclerView.VERTICAL,
                 false
             )
-        contentBinding.searchResultRecyclerView.adapter = SearchResultListItemAdapter(
+        binding.incldueAppBar.includeContent.searchResultRecyclerView.adapter = SearchResultListItemAdapter(
             searchResults,
             ::onClickSearchResult,
             mangaSource.refererUrl

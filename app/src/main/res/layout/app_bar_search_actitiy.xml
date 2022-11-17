@@ -21,5 +21,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_search_actitiy"/>
+    <include
+            android:id="@+id/includeContent"
+            layout="@layout/content_search_actitiy" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

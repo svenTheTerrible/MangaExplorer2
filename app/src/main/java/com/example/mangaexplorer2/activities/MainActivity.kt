@@ -36,9 +36,7 @@ import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var activityBinding: ActivityMainBinding;
-    private lateinit var appBarBinding: AppBarMainBinding;
-    private lateinit var contentBinding: ContentMainBinding;
+    private lateinit var binding: ActivityMainBinding;
 
 
     private var favoriteItems: List<FavoriteItem> = emptyList()
@@ -48,26 +46,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityBinding = ActivityMainBinding.inflate(layoutInflater)
-        appBarBinding = AppBarMainBinding.inflate(layoutInflater)
-        contentBinding = ContentMainBinding.inflate(layoutInflater)
-        setContentView(activityBinding.root)
-        setSupportActionBar(appBarBinding.chapterToolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.includedAppBar.chapterToolbar)
 
-        appBarBinding.fab.setOnClickListener { view ->
+        binding.includedAppBar.fab.setOnClickListener { view ->
             if (!isCheckingForUpdates) {
                 checkForNewChapters(view)
             }
         }
 
         val toggle = ActionBarDrawerToggle(
-            this, activityBinding.drawerLayout, appBarBinding.chapterToolbar,
+            this, binding.drawerLayout, binding.includedAppBar.chapterToolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        activityBinding.drawerLayout.addDrawerListener(toggle)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-        activityBinding.navView.setNavigationItemSelectedListener(this)
+        binding.navView.setNavigationItemSelectedListener(this)
         favoritenDB = getFavoriteDbInstance(applicationContext)
         updateFavoriteList()
     }
@@ -102,11 +98,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun updateNewChapterFab(): Unit {
         if (isCheckingForUpdates) {
-            appBarBinding.fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
-            appBarBinding.fab.isEnabled = false
+            binding.includedAppBar.fab.setImageDrawable(resources.getDrawable(R.drawable.baseline_public_24_white))
+            binding.includedAppBar.fab.isEnabled = false
         } else {
-            appBarBinding.fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
-            appBarBinding.fab.isEnabled = true
+            binding.includedAppBar.fab.setImageDrawable(resources.getDrawable(R.drawable.refresh))
+            binding.includedAppBar.fab.isEnabled = true
         }
     }
 
@@ -163,10 +159,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun updateFavoriteList(): Unit {
-        val displayMetrics = DisplayMetrics()
-        val width = getScreenWidth() / displayMetrics.scaledDensity
+        val density = resources.displayMetrics.density
+        val width = getScreenWidth() / density
+
         favoriteItems = favoritenDB.getFavorites().sortedBy { item -> item.hasNewChapter }.reversed()
-        contentBinding.favoritenRecyclerView.layoutManager =
+        binding.includedAppBar.includeContent.favoritenRecyclerView.layoutManager =
             LinearLayoutManager(
                 this,
                 RecyclerView.VERTICAL,
@@ -175,7 +172,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         if (width > 500) {
             val bundledFavoriteItems = bundleBy2(favoriteItems)
-            contentBinding.favoritenRecyclerView.adapter =
+            binding.includedAppBar.includeContent.favoritenRecyclerView.adapter =
                 DoubleFavoritenListItemAdapter(
                     bundledFavoriteItems,
                     ::onClickFavoriteItems,
@@ -184,7 +181,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return;
         }
 
-        contentBinding.favoritenRecyclerView.adapter =
+        binding.includedAppBar.includeContent.favoritenRecyclerView.adapter =
             FavoritenListItemAdapter(
                 favoriteItems,
                 ::onClickFavoriteItems,
@@ -253,8 +250,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        if (activityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -293,7 +290,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(intent)
             }
         }
-        activityBinding.drawerLayout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 }

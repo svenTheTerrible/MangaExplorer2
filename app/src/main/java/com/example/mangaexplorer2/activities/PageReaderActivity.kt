@@ -29,7 +29,7 @@ import kotlin.math.abs
 
 
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
-    private lateinit var activityBinding: ActivityPageReaderBinding;
+    private lateinit var binding: ActivityPageReaderBinding;
 
 
     private lateinit var mangaSource: MangaSource
@@ -46,8 +46,8 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityBinding = ActivityPageReaderBinding.inflate(layoutInflater)
-        setContentView(activityBinding.root)
+        binding = ActivityPageReaderBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         pageBufferList = PageBufferList(applicationContext, 3)
         favoriteDB = getFavoriteDbInstance(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -55,7 +55,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         currentPageUrl = chapterResult.url
         supportActionBar?.hide()
 
-        activityBinding.multiImageView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+        binding.multiImageView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                 gDetector.onTouchEvent(e)
                 return super.onInterceptTouchEvent(rv, e)
@@ -105,7 +105,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     private fun loadCurrentPageUrl() {
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
-            activityBinding.progressBar.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.VISIBLE
             pageBufferList.createPageBuffer(pageUrl, searchResult.url, mangaSource, searchResult.name)
             pageBufferList.getPageResult(pageUrl) {
                 updateImageView(it)
@@ -114,8 +114,8 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun updateImageView(pageBuffer: PageBuffer?) {
-        activityBinding.progressBar.visibility = View.GONE
-        activityBinding.errorContainer.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.errorContainer.visibility = View.GONE
         if (pageBuffer == null) {
             return
         }
@@ -125,8 +125,8 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
             PageLoadingState.LOADED -> renderSuccessfullImage(result)
             else -> renderErrorOptions(pageBuffer)
         }
-        activityBinding.chapterNameTextView.text = pageResult?.chapterName ?: ""
-        activityBinding.pageCountTextView.text =
+        binding.chapterNameTextView.text = pageResult?.chapterName ?: ""
+        binding.pageCountTextView.text =
             (pageResult?.pageCount?.toString() ?: "") + "/" + (pageResult?.pageAmount?.toString()
                 ?: "")
         if (result.imageBitmap.size > 1) {
@@ -138,9 +138,9 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun initReloadButton(pageBuffer: PageBuffer): Unit {
-        activityBinding.reloadButton.setOnClickListener { _ ->
-            activityBinding.progressBar.visibility = View.VISIBLE
-            activityBinding.errorContainer.visibility = View.GONE
+        binding.reloadButton.setOnClickListener { _ ->
+            binding.progressBar.visibility = View.VISIBLE
+            binding.errorContainer.visibility = View.GONE
             pageBuffer.reloadFailedPage {
                 updateImageView(pageBuffer)
             }
@@ -149,12 +149,12 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     private fun renderErrorOptions(pageBuffer: PageBuffer) {
         val result = pageBuffer.getResult()
-        activityBinding.errorContainer.visibility = View.VISIBLE
-        activityBinding.singleImageView.visibility = View.INVISIBLE
-        activityBinding.multiImageView.visibility = View.INVISIBLE
+        binding.errorContainer.visibility = View.VISIBLE
+        binding.singleImageView.visibility = View.INVISIBLE
+        binding.multiImageView.visibility = View.INVISIBLE
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         if (result.errorType === PageLoadingError.IMAGE_NOT_LOADING && result.pageResult?.imageUrl == null) {
-            activityBinding.errorText.text =
+            binding.errorText.text =
                 "Image link could not be fetched"
             val clip = ClipData.newPlainText("", pageBuffer.pageUrl)
             clipboard.setPrimaryClip(clip)
@@ -164,7 +164,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }
 
         if (result.errorType === PageLoadingError.IMAGE_NOT_LOADING) {
-            activityBinding.errorText.text =
+            binding.errorText.text =
                 "Could not load image link -> imageUrl: '${result.pageResult?.imageUrl}'"
             val clip = ClipData.newPlainText("", result.pageResult?.imageUrl)
             clipboard.setPrimaryClip(clip)
@@ -174,7 +174,7 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         }
 
         if (result.errorType === PageLoadingError.PAGE_NOT_LOADING) {
-            activityBinding.errorText.text = "Page did not load -> pageUrl: '${pageBuffer.pageUrl}'"
+            binding.errorText.text = "Page did not load -> pageUrl: '${pageBuffer.pageUrl}'"
             val clip = ClipData.newPlainText("", pageBuffer.pageUrl)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(applicationContext, "PageUrl copied", Toast.LENGTH_SHORT).show()
@@ -185,8 +185,8 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     private fun renderSuccessfullImage(pageBufferResult: PageBufferResult) {
         val pageResult = pageBufferResult.pageResult!!
-        activityBinding.chapterNameTextView.text = pageResult.chapterName
-        activityBinding.pageCountTextView.text =
+        binding.chapterNameTextView.text = pageResult.chapterName
+        binding.pageCountTextView.text =
             pageResult.pageCount.toString() + "/" + pageResult.pageAmount.toString()
         if (pageBufferResult.imageBitmap.size > 1) {
             renderBitmapList(pageBufferResult.imageBitmap)
@@ -196,22 +196,22 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
     private fun renderBitmap(bitmap: Bitmap) {
-        activityBinding.multiImageView.visibility = View.GONE
-        activityBinding.singleImageView.visibility = View.VISIBLE
-        activityBinding.singleImageView.setImageBitmap(bitmap)
+        binding.multiImageView.visibility = View.GONE
+        binding.singleImageView.visibility = View.VISIBLE
+        binding.singleImageView.setImageBitmap(bitmap)
     }
 
     private fun renderBitmapList(bitmaps: List<Bitmap>) {
 
-        activityBinding.multiImageView.visibility = View.VISIBLE
-        activityBinding.singleImageView.visibility = View.GONE
-        activityBinding.multiImageView.layoutManager =
+        binding.multiImageView.visibility = View.VISIBLE
+        binding.singleImageView.visibility = View.GONE
+        binding.multiImageView.layoutManager =
             LinearLayoutManager(
                 this,
                 RecyclerView.VERTICAL,
                 false
             )
-        activityBinding.multiImageView.adapter = MultiImageViewAdapter(bitmaps)
+        binding.multiImageView.adapter = MultiImageViewAdapter(bitmaps)
     }
 
     private fun loadNextPage() {

@@ -40,6 +40,8 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_chapter"/>
+    <include
+            android:id="@+id/includeContent"
+            layout="@layout/content_chapter" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

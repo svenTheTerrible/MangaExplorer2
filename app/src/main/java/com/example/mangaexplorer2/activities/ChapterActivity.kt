@@ -16,21 +16,19 @@ import com.example.mangaexplorer2.mangaSources.util.ChapterResult
 import com.example.mangaexplorer2.mangaSources.util.MangaSource
 import com.example.mangaexplorer2.mangaSources.util.SearchResult
 import com.example.mangaexplorer2.databinding.ActivityChapterBinding
-import com.example.mangaexplorer2.databinding.ContentChapterBinding
 
 class ChapterActivity : AppCompatActivity() {
-    private lateinit var activityBinding: ActivityChapterBinding;
-    private lateinit var contentBinding: ContentChapterBinding;
+    private lateinit var binding: ActivityChapterBinding;
     private lateinit var mangaSource: MangaSource;
     private lateinit var searchResult: SearchResult;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityBinding = ActivityChapterBinding.inflate(layoutInflater)
-        setContentView(activityBinding.root)
-        setSupportActionBar(activityBinding.chapterToolbar)
+        binding = ActivityChapterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.chapterToolbar)
         unpackExtras()
-        activityBinding.chapterToolbar.title = searchResult.name
+        binding.chapterToolbar.title = searchResult.name
 
         val glideUrl = GlideUrl(
             searchResult.coverUrl,
@@ -40,7 +38,7 @@ class ChapterActivity : AppCompatActivity() {
         GlideApp.with(this)
             .load(glideUrl).diskCacheStrategy(DiskCacheStrategy.NONE)
             .transition(DrawableTransitionOptions.withCrossFade())
-            .into(activityBinding.appBarMangaCover)
+            .into(binding.appBarMangaCover)
 
         loadChapters()
     }
@@ -53,14 +51,14 @@ class ChapterActivity : AppCompatActivity() {
     }
 
     private fun updateChapterResults(chapters: List<ChapterResult>, isLoading: Boolean): Unit {
-        contentBinding.chapterProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        contentBinding.chapterRecyclerView.layoutManager =
+        binding.includeContent.chapterProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.includeContent.chapterRecyclerView.layoutManager =
             LinearLayoutManager(
                 this,
                 RecyclerView.VERTICAL,
                 false
             )
-        contentBinding.chapterRecyclerView.adapter = ChapterResultListItemAdapter(chapters, ::onClickChapterResult)
+        binding.includeContent.chapterRecyclerView.adapter = ChapterResultListItemAdapter(chapters, ::onClickChapterResult)
     }
 
     private fun onClickChapterResult(chapterResult: ChapterResult): Unit {
@@ -69,7 +67,6 @@ class ChapterActivity : AppCompatActivity() {
         intent.putExtra("searchResult", searchResult)
         intent.putExtra("chapterResult", chapterResult)
         startActivity(intent)
-
     }
 
 
