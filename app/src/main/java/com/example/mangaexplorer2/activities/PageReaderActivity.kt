@@ -17,24 +17,23 @@ import com.example.mangaexplorer2.mangaSources.util.*
 import com.example.mangaexplorer2.models.FavoriteItem
 import com.example.mangaexplorer2.models.NextChapterState
 import com.example.mangaexplorer2.utility.FavoritenDB
-import com.example.mangaexplorer2.utility.closeFavoriteDbInstance
 import com.example.mangaexplorer2.utility.getFavoriteDbInstance
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.PersistableBundle
 import android.widget.Toast
 import com.example.mangaexplorer2.activities.util.*
 import com.example.mangaexplorer2.databinding.ActivityPageReaderBinding
+import javax.xml.transform.Source
 import kotlin.math.abs
 
 
 class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var binding: ActivityPageReaderBinding;
 
-
     private lateinit var mangaSource: MangaSource
     private lateinit var searchResult: SearchResult
-    private lateinit var chapterResult: ChapterResult
     private lateinit var gDetector: GestureDetectorCompat
 
     private lateinit var pageBufferList: PageBufferList
@@ -46,67 +45,73 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        println(savedInstanceState?.getInt("uff") ?: 0)
         binding = ActivityPageReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
         pageBufferList = PageBufferList(applicationContext, 3)
         favoriteDB = getFavoriteDbInstance(applicationContext)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        unpackExtras()
-        currentPageUrl = chapterResult.url
+        if(!unpackExtrasFromPreviousInstance(savedInstanceState)){
+            unpackExtrasAndGetStarterUrl()
+        }
         supportActionBar?.hide()
-
-        binding.multiImageView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+        binding.multiImageView.addOnItemTouchListener(object :
+            RecyclerView.SimpleOnItemTouchListener() {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                 gDetector.onTouchEvent(e)
                 return super.onInterceptTouchEvent(rv, e)
             }
         })
-
         this.gDetector = GestureDetectorCompat(this, this)
-
         loadCurrentPageUrl()
     }
 
-    override fun onResume() {
-        super.onResume()
-        favoriteDB = getFavoriteDbInstance(applicationContext)
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
+        outState.putString("mangaSourceName", mangaSource.sourceName.toString())
+        outState.putSerializable("searchResult", searchResult)
+        outState.putSerializable("starterUrl", currentPageUrl)
+        super.onSaveInstanceState(outState, outPersistentState)
     }
 
-    override fun onPause() {
-        super.onPause()
-        closeFavoriteDbInstance()
-        val currentPage = currentPageUrl
-        if (currentPage != null) {
-            intent.putExtra(
-                "chapterResult", ChapterResult(
-                    name = "",
-                    url = currentPage
-                )
-            )
+    private fun unpackExtrasFromPreviousInstance(savedInstanceState: Bundle?): Boolean{
+        if(savedInstanceState == null){
+            return false
         }
+        val mangaSourceName = savedInstanceState.getString("mangaSourceName")
+        val sResult = savedInstanceState.getSerializable("searchResult")
+        val sUrl = savedInstanceState.getString("starterUrl")
+        if(mangaSourceName == null || sResult == null || sUrl == null){
+            return false
+        }
+        mangaSource = SourceRegister.getSourceByString(mangaSourceName)
+        searchResult = sResult as SearchResult
+        currentPageUrl = sUrl
+        return true
     }
 
-    private fun unpackExtras() {
+    private fun unpackExtrasAndGetStarterUrl() {
         val extras = intent.extras ?: throw Error("extras is missing")
-        mangaSource =
-            (extras.getSerializable("mangaSource")
-                ?: throw Error("sourceName is missing")) as? MangaSource
-                ?: throw Error("Serializable is no MangaSource")
+        mangaSource = SourceRegister.getSourceByString(
+            extras.getString("mangaSourceName") ?: throw Error("mangaSourceName not provided")
+        )
         searchResult =
             (extras.getSerializable("searchResult")
                 ?: throw Error("searchResult is missing")) as? SearchResult
                 ?: throw Error("Serializable is no SearchResult")
-        chapterResult =
-            (extras.getSerializable("chapterResult")
-                ?: throw Error("chapterResult is missing")) as? ChapterResult
-                ?: throw Error("Serializable is no ChapterResult")
+        currentPageUrl = extras.getString("starterUrl") ?: throw Error("starter url is missing")
     }
 
     private fun loadCurrentPageUrl() {
         val pageUrl = currentPageUrl
         if (pageUrl != null) {
             binding.progressBar.visibility = View.VISIBLE
-            pageBufferList.createPageBuffer(pageUrl, searchResult.url, mangaSource, searchResult.name)
+            pageBufferList.createPageBuffer(
+                pageUrl,
+                searchResult.url,
+                mangaSource,
+                searchResult.name
+            )
             pageBufferList.getPageResult(pageUrl) {
                 updateImageView(it)
             }

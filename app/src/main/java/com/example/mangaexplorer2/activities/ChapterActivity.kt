@@ -63,9 +63,9 @@ class ChapterActivity : AppCompatActivity() {
 
     private fun onClickChapterResult(chapterResult: ChapterResult): Unit {
         val intent = Intent(this, PageReaderActivity::class.java)
-        intent.putExtra("mangaSource", mangaSource)
+        intent.putExtra("mangaSourceName", mangaSource.sourceName.toString())
         intent.putExtra("searchResult", searchResult)
-        intent.putExtra("chapterResult", chapterResult)
+        intent.putExtra("starterUrl", chapterResult.url)
         startActivity(intent)
     }
 

@@ -22,8 +22,6 @@ import com.example.mangaexplorer2.R
 import com.example.mangaexplorer2.adapters.DoubleFavoritenListItemAdapter
 import com.example.mangaexplorer2.adapters.FavoritenListItemAdapter
 import com.example.mangaexplorer2.databinding.ActivityMainBinding
-import com.example.mangaexplorer2.databinding.AppBarMainBinding
-import com.example.mangaexplorer2.databinding.ContentMainBinding
 import com.example.mangaexplorer2.mangaSources.*
 import com.example.mangaexplorer2.mangaSources.util.*
 import com.example.mangaexplorer2.models.FavoriteItem
@@ -74,7 +72,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun checkFavoriteForUpdate(favorite: FavoriteItem): FavoriteItem {
-        val mangaSource = SourceRegister().getSource(favorite.mangaSource)
+        val mangaSource = SourceRegister.getSourceByString(favorite.mangaSource)
         var nextPageState = NextChapterState.UNAVAILABLE
         try {
             val nextPagePackage =
@@ -197,7 +195,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun openToChapterMenu(favoriteItem: FavoriteItem): Unit {
         val intent = Intent(this, ChapterActivity::class.java)
-        intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
+        intent.putExtra("mangaSource", SourceRegister.getSourceByString(favoriteItem.mangaSource))
         intent.putExtra(
             "searchResult",
             SearchResult(
@@ -232,7 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun onClickFavoriteItems(favoriteItem: FavoriteItem): Unit {
         val intent = Intent(this, PageReaderActivity::class.java)
-        intent.putExtra("mangaSource", SourceRegister().getSource(favoriteItem.mangaSource))
+        intent.putExtra("mangaSourceName", favoriteItem.mangaSource)
         intent.putExtra(
             "searchResult", SearchResult(
                 name = favoriteItem.mangaTitle,
@@ -241,10 +239,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
         )
         intent.putExtra(
-            "chapterResult", ChapterResult(
-                name = "",
-                url = favoriteItem.currentPageUrl
-            )
+            "starterUrl", favoriteItem.currentPageUrl
         )
         startActivity(intent)
     }

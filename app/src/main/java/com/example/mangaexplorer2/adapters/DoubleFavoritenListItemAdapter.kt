@@ -65,7 +65,7 @@ class DoubleFavoritenListItemAdapter(
         val glideUrl = GlideUrl(
             favorite.coverImageUrl,
             LazyHeaders.Builder()
-                .addHeader("Referer", SourceRegister().getSource(favorite.mangaSource).refererUrl)
+                .addHeader("Referer", SourceRegister.getSourceByString(favorite.mangaSource).refererUrl)
                 .build()
         )
 

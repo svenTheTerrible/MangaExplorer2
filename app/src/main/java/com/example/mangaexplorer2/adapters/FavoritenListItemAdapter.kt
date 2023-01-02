@@ -36,7 +36,7 @@ class FavoritenListItemAdapter(private val favoriteItems: List<FavoriteItem>, pr
         val glideUrl = GlideUrl(
             favoriteItem.coverImageUrl,
             LazyHeaders.Builder()
-                .addHeader("Referer", SourceRegister().getSource(favoriteItem.mangaSource).refererUrl)
+                .addHeader("Referer", SourceRegister.getSourceByString(favoriteItem.mangaSource).refererUrl)
                 .build()
         )
         GlideApp.with(holder.mView.context)
