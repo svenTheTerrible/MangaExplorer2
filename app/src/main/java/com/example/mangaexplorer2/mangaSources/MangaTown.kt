@@ -31,7 +31,7 @@ class MangaTown() : MangaSource() {
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
-        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).get()
+        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).timeout(jsoupTimeout).get()
         return doc.select(".chapter_list").select("a").map { chapterLink ->
             ChapterResult(
                 name = chapterLink.text(),
@@ -53,7 +53,7 @@ class MangaTown() : MangaSource() {
     ) {
         val handler = Handler(Looper.getMainLooper())
         Thread {
-            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer(refererUrl).get()
+            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer(refererUrl).timeout(jsoupTimeout).get()
             val searchResults = doc.select(".manga_cover").map { resultItem ->
                 SearchResult(
                     name = resultItem.attr("title"),
@@ -80,7 +80,7 @@ class MangaTown() : MangaSource() {
 
     private fun getDoc(url: String): Document? {
         return try {
-            Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
+            Jsoup.connect(url).referrer(refererUrl).timeout(jsoupTimeout).get()
         } catch (
             e: Exception
         ) {

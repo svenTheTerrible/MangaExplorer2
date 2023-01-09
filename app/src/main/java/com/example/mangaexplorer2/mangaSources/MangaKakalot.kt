@@ -2,6 +2,7 @@ package com.example.mangaexplorer2.mangaSources
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.example.mangaexplorer2.mangaSources.util.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -32,7 +33,7 @@ class MangaKakalot() : MangaSource() {
     }
 
     private fun getChaptersSync(chapterMenuUrl: String): List<ChapterResult> {
-        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).get()
+        val doc = Jsoup.connect(chapterMenuUrl).referrer(refererUrl).timeout(jsoupTimeout).get()
         return doc.select(".panel-story-chapter-list").select("li").map { chapterListItem ->
             val chapterLink = chapterListItem.select("a")
             ChapterResult(
@@ -50,7 +51,7 @@ class MangaKakalot() : MangaSource() {
         Thread {
             val underscoreSearch = searchterm.replace(" ", "_")
             val doc = Jsoup.connect("https://mangakakalot.com/search/story/$underscoreSearch")
-                .referrer(refererUrl).get()
+                .referrer(refererUrl).timeout(jsoupTimeout).get()
             val searchResults = doc.select(".story_item").map { resultItem ->
                 SearchResult(
                     name = resultItem.select(".story_name").select("a").text(),
@@ -68,10 +69,11 @@ class MangaKakalot() : MangaSource() {
 
     private fun getDoc(url: String): Document? {
         return try {
-            Jsoup.connect(url).referrer(refererUrl).timeout(5000).get()
+            Jsoup.connect(url).referrer(refererUrl).timeout(jsoupTimeout).get()
         } catch (
             e: Exception
         ) {
+            Log.e("getDoc", e.message ?: e.localizedMessage ?: "could not load exception text")
             null
         }
     }

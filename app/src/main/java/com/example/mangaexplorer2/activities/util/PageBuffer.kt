@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
@@ -83,6 +84,7 @@ class PageBuffer(
             try {
                 pageResult = mangaSource.getPageResultSync(pageUrl, chapterMenuUrl, mangaName)
             } catch (e: Exception) {
+                Log.e("getPageResultSync", e.message ?: e.localizedMessage ?: "could not load exception text")
                 loadingTry += 1
                 Thread.sleep(1000)
             }

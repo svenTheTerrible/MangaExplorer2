@@ -18,6 +18,7 @@ class MangaPageCache(val images: List<String>?, val chapterName: String?, val pa
 abstract class MangaSource: Serializable{
     abstract val sourceName: MangaSourceName
     abstract val refererUrl: String
+    val jsoupTimeout: Int = 20*1000
     //Sometimes, all pages of a chapter can be parsed by processing one page of the manga, that can be cached here
     abstract val mangaPageCache: MutableMap<String, MangaPageCache>
     abstract fun getChapters(chapterMenuUrl: String, mangaName: String, callback:(chapters: List<ChapterResult>) -> Unit)
