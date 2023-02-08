@@ -41,6 +41,9 @@ class MangaTown() : MangaSource() {
     }
 
     private fun repairUrl(url: String): String {
+        if(url.contains("https://mangatown.com")){
+            return url.replace("https://", "https://www.")
+        }
         if (url.contains("mangatown.com")) {
             return "https:$url"
         }
@@ -80,7 +83,7 @@ class MangaTown() : MangaSource() {
 
     private fun getDoc(url: String): Document? {
         return try {
-            Jsoup.connect(url).referrer(refererUrl).timeout(jsoupTimeout).get()
+            Jsoup.connect(repairUrl(url)).referrer(refererUrl).timeout(jsoupTimeout).get()
         } catch (
             e: Exception
         ) {
@@ -125,6 +128,10 @@ class MangaTown() : MangaSource() {
 
         if (url == null) {
             return null
+        }
+
+        if(url.contains("https://mangatown.com")){
+            return url.replace("https://", "https://www.")
         }
 
         if (url.contains("http")) {
