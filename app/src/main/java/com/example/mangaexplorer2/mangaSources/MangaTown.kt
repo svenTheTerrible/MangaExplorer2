@@ -40,16 +40,6 @@ class MangaTown() : MangaSource() {
         }.reversed()
     }
 
-    private fun repairUrl(url: String): String {
-        if(url.contains("https://mangatown.com")){
-            return url.replace("https://", "https://www.")
-        }
-        if (url.contains("mangatown.com")) {
-            return "https:$url"
-        }
-        return "https://www.mangatown.com$url";
-    }
-
     override fun getSearchResult(
         searchterm: String,
         callback: (searchResults: List<SearchResult>) -> Unit
@@ -70,20 +60,17 @@ class MangaTown() : MangaSource() {
         }.start()
     }
 
-    private fun repairImageUrl(url: String?): String? {
-        if (url == null) {
-            return null
+    private fun repairUrlOptional(url: String?): String?{
+        if(url == null){
+            return null;
         }
-        val test = url.subSequence(0, 2)
-        if (test == "//") {
-            return "http://$url";
-        }
-        return url
+        return repairUrl(url);
     }
 
     private fun getDoc(url: String): Document? {
+        val test = repairUrl(url);
         return try {
-            Jsoup.connect(repairUrl(url)).referrer(refererUrl).timeout(jsoupTimeout).get()
+            Jsoup.connect(test).referrer(refererUrl).timeout(jsoupTimeout).get()
         } catch (
             e: Exception
         ) {
@@ -124,20 +111,23 @@ class MangaTown() : MangaSource() {
         }
     }
 
-    private fun repairNextPageUrl(url: String?): String? {
-
-        if (url == null) {
-            return null
+    private fun repairUrl(url: String): String {
+        if(url.startsWith("https://www.mangatown.com")){
+            return url;
         }
-
-        if(url.contains("https://mangatown.com")){
+        if(url.startsWith("http://www.mangatown.com")){
+            return url;
+        }
+        if(url.startsWith("https://mangatown.com")){
             return url.replace("https://", "https://www.")
         }
-
-        if (url.contains("http")) {
-            return url
+        if (url.startsWith("mangatown.com")) {
+            return "https://www.$url"
         }
-        return "https://mangatown.com" + url
+        if(url.startsWith("//")){
+            return "http://$url";
+        }
+        return "https://www.mangatown.com$url";
     }
 
     override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
@@ -164,11 +154,11 @@ class MangaTown() : MangaSource() {
         val nextPage =
             if (nextPageOption != null) nextPageOption.attr("value") else nextChapterOption?.attr("value")
         return PageResult(
-            imageUrl = repairImageUrl(imageUrl),
+            imageUrl = repairUrlOptional(imageUrl),
             chapterName = chapterName,
             pageAmount = pageAmount,
             pageCount = pageCount,
-            nextPageUrl = repairNextPageUrl(nextPage)
+            nextPageUrl = repairUrlOptional(nextPage)
         )
     }
 
