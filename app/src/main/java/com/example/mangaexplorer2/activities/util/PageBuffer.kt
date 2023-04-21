@@ -152,7 +152,6 @@ class PageBuffer(
         val bitmaps = mutableListOf<Bitmap>()
         val origHeight = origBitmap.height
         var processedHeight = 0
-
         val chunkHeight = 50
 
         while (processedHeight < origHeight) {
@@ -169,6 +168,7 @@ class PageBuffer(
             )
             processedHeight += chunkHeight
         }
+        origBitmap.recycle();
         return bitmaps
     }
 }

@@ -14,7 +14,6 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
         mangaName: String,
         remainingBufferSize: Int = pageBufferSize
     ) {
-        clearOldBuffers()
         val matchingEntry = pageBufferList.find { it.pageUrl == pageUrl }
 
         fun loadNextPage(nextPageUrl: String?) {
@@ -37,6 +36,7 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
     }
 
     fun getPageResult(pageUrl: String, callback: (pageResultBuffer: PageBuffer?) -> Unit) {
+        clearOldBuffers()
         val matchingEntry = pageBufferList.find { it.pageUrl == pageUrl } ?: return callback(null)
         val handler = Handler()
         Thread(Runnable {
@@ -51,6 +51,13 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
 
     private fun clearOldBuffers(){
         val threeMinutes = 1000*60*3
-        pageBufferList = pageBufferList.filter { it.getResult().loadingStatus == PageLoadingState.IS_LOADING || System.currentTimeMillis() - it.timestamp < threeMinutes}.toMutableList()
+
+        //recycle old bitmaps
+        pageBufferList.filter { it.getResult().loadingStatus == PageLoadingState.LOADED && it.timestamp + threeMinutes < System.currentTimeMillis()}.forEach {
+            it.getResult().imageBitmap.forEach { it.recycle() }
+        }
+
+        //remove old pageResults
+        pageBufferList = pageBufferList.filter { it.getResult().loadingStatus == PageLoadingState.IS_LOADING || it.timestamp + threeMinutes >=  System.currentTimeMillis()}.toMutableList()
     }
 }

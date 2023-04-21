@@ -134,11 +134,6 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         binding.pageCountTextView.text =
             (pageResult?.pageCount?.toString() ?: "") + "/" + (pageResult?.pageAmount?.toString()
                 ?: "")
-        if (result.imageBitmap.size > 1) {
-            renderBitmapList(result.imageBitmap)
-        } else if (result.imageBitmap.size == 1) {
-            renderBitmap(result.imageBitmap[0])
-        }
         this.currentPageResult = result
     }
 
