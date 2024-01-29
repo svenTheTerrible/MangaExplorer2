@@ -135,6 +135,8 @@ class PageBuffer(
                     loadingStatus = PageLoadingState.FAILED_TO_LOAD
                 }
 
+
+
                 override fun onLoadCleared(p0: Drawable?) {}
                 override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
                     imageBitmaps = if (p0.height / p0.width > 2.5) {

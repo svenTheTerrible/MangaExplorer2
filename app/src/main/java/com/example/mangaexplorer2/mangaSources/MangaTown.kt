@@ -15,6 +15,7 @@ class MangaTown() : MangaSource() {
     override val refererUrl = "https://www.mangatown.com/"
 
     override val mangaPageCache: MutableMap<String, MangaPageCache> = mutableMapOf()
+    private val docCache: MutableMap<String, Document> = mutableMapOf();
 
     override fun getChapters(
         chapterMenuUrl: String,
@@ -87,6 +88,10 @@ class MangaTown() : MangaSource() {
         }
     }
 
+    private fun getImageUrlsManwhaMode(doc: Document?): List<String>{
+        return doc?.select(".image")?.map { element -> element.attr("src") } ?: emptyList<String>()
+    }
+
     private fun getAvailablePageOptions(doc: Document?): List<Element>? {
         return try {
             doc?.select(".manga_read_footer")?.select(".page_select")?.select("option")?.toList()?.filter { option ->
@@ -130,8 +135,47 @@ class MangaTown() : MangaSource() {
         return "https://www.mangatown.com$url";
     }
 
-    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
-        val doc = getDoc(pageUrl)
+    private fun getPageNumberFromUrl(pageUrl: String): Int {
+        val splitUrl = pageUrl.split("#")
+        try {
+            return Integer.parseInt(splitUrl.getOrNull(1) ?: "0")
+        }catch (ex: NumberFormatException){
+            return 0;
+        }
+
+    }
+
+    private fun addPageNumberToUrl(pageUrl: String, pageNumber: Int): String{
+        val splitUrl = pageUrl.split("#")
+        val baseUrl = splitUrl[0];
+        return "$baseUrl#$pageNumber";
+    }
+
+    private fun getPageResultManwhaMode(doc: Document?, imageUrls: List<String>, pageUrl: String): PageResult{
+        val repairedImageUrls = imageUrls.map { repairUrlOptional(it) }
+        val currentPage =getPageNumberFromUrl(pageUrl);
+        val pageAmount = repairedImageUrls.size;
+        val chapterOptions = getChapterOptions(doc)
+        val selectedChapterIndex =
+            chapterOptions?.indexOfFirst { element -> element.hasAttr("selected") }
+
+        val chapterName =
+            if (selectedChapterIndex != null) chapterOptions?.getOrNull(selectedChapterIndex)
+                ?.text() else null
+
+        val nextChapterOption =
+            if (selectedChapterIndex != null) chapterOptions?.getOrNull(selectedChapterIndex + 1) else null
+        val nextPageUrl = if(currentPage < repairedImageUrls.size -1) addPageNumberToUrl(pageUrl, currentPage +1) else repairUrlOptional(nextChapterOption?.attr("value"))
+        return PageResult(
+            imageUrl = repairedImageUrls.getOrNull(currentPage),
+            chapterName = chapterName,
+            pageAmount = pageAmount,
+            pageCount = currentPage +1,
+            nextPageUrl = repairUrlOptional(nextPageUrl)
+        )
+    }
+
+    private fun getPageResultNormal(doc: Document?): PageResult{
         val imageUrl = getImageUrl(doc)
         val availablePageOptions = getAvailablePageOptions(doc)
         val pageAmount = availablePageOptions?.size ?: 0
@@ -160,6 +204,26 @@ class MangaTown() : MangaSource() {
             pageCount = pageCount,
             nextPageUrl = repairUrlOptional(nextPage)
         )
+    }
+
+    private fun getCachedDoc(pageUrl: String): Document ? {
+        val cachePageUrl = addPageNumberToUrl(pageUrl, 999)
+        if(docCache.containsKey(cachePageUrl)){
+            return docCache[cachePageUrl]
+        }
+        val newDoc =getDoc(pageUrl)
+        if(newDoc != null){
+            docCache.clear()
+            docCache[cachePageUrl] = newDoc;
+        }
+        return newDoc
+    }
+
+
+    override fun getPageResultSync(pageUrl: String, chapterMenuUrl: String, mangaName: String): PageResult {
+        val doc = getCachedDoc(pageUrl)
+        val imageUrls = getImageUrlsManwhaMode(doc);
+        return if (imageUrls.isNotEmpty()) getPageResultManwhaMode(doc, imageUrls, pageUrl) else getPageResultNormal(doc)
     }
 
 }
