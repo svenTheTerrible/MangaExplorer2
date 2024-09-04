@@ -265,50 +265,23 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
     }
 
 
-    override fun onShowPress(e: MotionEvent?) {}
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        return true
+    override fun onDown(p0: MotionEvent): Boolean {
+        TODO("Not yet implemented")
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
-        return true
+    override fun onShowPress(p0: MotionEvent) {
+        TODO("Not yet implemented")
     }
 
-    override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        velocityX: Float,
-        velocityY: Float
-    ): Boolean {
-        if (e1 != null && e2 != null) {
-            val xDiff = abs(e1.x - e2.x)
-            val yDiff = abs(e1.y - e2.y)
-            if (xDiff > yDiff) {
-                if (xDiff > 100) {
-                    if (e1.x > e2.x) {
-                        //to right
-                        loadLastPage()
-                    } else {
-                        //to left
-                        loadNextPage()
-                    }
-                }
-            }
-        }
-        return true
+    override fun onSingleTapUp(p0: MotionEvent): Boolean {
+        TODO("Not yet implemented")
     }
 
-    override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
-        return true
+    override fun onScroll(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
+        TODO("Not yet implemented")
     }
 
-    override fun onLongPress(e: MotionEvent?) {
+    override fun onLongPress(p0: MotionEvent) {
         val isFavorite =
             favoriteDB.mangaIsFavorite(mangaSource.sourceName.toString(), searchResult.name)
 
@@ -338,7 +311,26 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         builder.setNegativeButton(android.R.string.no) { _, _ ->
         }
         builder.show()
+    }
 
+
+    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        if (e1 != null && e2 != null) {
+            val xDiff = abs(e1.x - e2.x)
+            val yDiff = abs(e1.y - e2.y)
+            if (xDiff > yDiff) {
+                if (xDiff > 100) {
+                    if (e1.x > e2.x) {
+                        //to right
+                        loadLastPage()
+                    } else {
+                        //to left
+                        loadNextPage()
+                    }
+                }
+            }
+        }
+        return true
     }
 
 }
