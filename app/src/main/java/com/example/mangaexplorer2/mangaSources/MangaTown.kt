@@ -47,7 +47,25 @@ class MangaTown() : MangaSource() {
     ) {
         val handler = Handler(Looper.getMainLooper())
         Thread {
-            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm").referrer(refererUrl).timeout(jsoupTimeout).get()
+            val doc = Jsoup.connect("https://www.mangatown.com/search.php?name=$searchterm")
+                .cookie("cookie", "DM5_MACHINEKEY=cc1c76e0-bb0e-4cc3-af74-5a6c73cf5239; __utmc=1; __utmz=1.1715794173.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _ga=GA1.1.258659861.1715794180; read_tsukkomi=; image_time_cookie=519669|638514200507675583|1,194087|638514209951745385|0; dm5imgpage=519669|6:0,194087|1:0; readhistoryitem=History=28913,638514200507815541,519669,6,0,0,0,1|12005,638514209951855350,194087,1,0,0,0,1&ViewType=0; readhistory_time=12005-194087-1; imageload=519669%7C13%2C194087%7C2; _ga_RRD7Q6C508=GS1.1.1715794179.1.1.1715796494.0.0.0; webstickynode=035d7b9dfbcd7439e99dd492ed943c34; __utma=1.1912077701.1715794173.1715794173.1715797060.2; __utmt=1; __utmb=1.1.10.1715797060")
+                .header("Pragma", "no-cache")
+                .header("Sec-Ch-Ua", "\"Chromium\";v=\"123\", \"Not:A-Brand\";v=\"8\"")
+                .header("Sec-Ch-Ua-Mobile", "?0")
+                .header("Sec-Ch-Ua-Platform", "Linux\"")
+                .header("Sec-Fetch-Dest", "document")
+                .header("Sec-Fetch-Mode", "navigate")
+                .header("Sec-Fetch-Site", "none")
+                .header("Sec-Fetch-User", "?1")
+                .header("Upgrade-Insecure-Requests", "1")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                .header("Accept-Encoding", "gzip, deflate, br, zstd")
+                .header("Accept-Language", "en-US,en;q=0.9,de;q=0.8")
+                .header("Cache-Control", "no-cache")
+                .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
+                .referrer(refererUrl)
+                .timeout(jsoupTimeout)
+                .get()
             val searchResults = doc.select(".manga_cover").map { resultItem ->
                 SearchResult(
                     name = resultItem.attr("title"),

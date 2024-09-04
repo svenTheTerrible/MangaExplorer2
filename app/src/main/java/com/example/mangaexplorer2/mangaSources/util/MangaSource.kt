@@ -13,7 +13,7 @@ enum class MangaSourceName{
     MANGAKAKALOT
 }
 
-class MangaPageCache(val images: List<String>?, val chapterName: String?, val pageAmount: Int?, val nextChapterUrl: String?)
+class MangaPageCache(val images: List<String>?, val chapterName: String?, val pageAmount: Int?, val nextChapterUrl: String?): Serializable
 
 abstract class MangaSource: Serializable{
     abstract val sourceName: MangaSourceName
