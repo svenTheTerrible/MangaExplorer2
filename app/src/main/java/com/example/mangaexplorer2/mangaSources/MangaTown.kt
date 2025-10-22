@@ -62,6 +62,7 @@ class MangaTown() : MangaSource() {
                 .header("Accept-Encoding", "gzip, deflate, br, zstd")
                 .header("Accept-Language", "en-US,en;q=0.9,de;q=0.8")
                 .header("Cache-Control", "no-cache")
+                .header("Accept-Encoding", "gzip")
                 .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
                 .referrer(refererUrl)
                 .timeout(jsoupTimeout)
