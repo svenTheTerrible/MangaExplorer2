@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun openToChapterMenu(favoriteItem: FavoriteItem): Unit {
         val intent = Intent(this, ChapterActivity::class.java)
-        intent.putExtra("mangaSource", SourceRegister.getSourceByString(favoriteItem.mangaSource))
+        intent.putExtra("mangaSource", SourceRegister.getSourceByString(favoriteItem.mangaSource).clearAllCaches())
         intent.putExtra(
             "searchResult",
             SearchResult(

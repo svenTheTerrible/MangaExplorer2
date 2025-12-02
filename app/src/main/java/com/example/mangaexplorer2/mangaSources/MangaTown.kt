@@ -245,4 +245,9 @@ class MangaTown() : MangaSource() {
         return if (imageUrls.isNotEmpty()) getPageResultManwhaMode(doc, imageUrls, pageUrl) else getPageResultNormal(doc)
     }
 
+    override fun clearAllCaches(): MangaSource {
+        this.mangaPageCache.clear()
+        this.docCache.clear()
+        return this
+    }
 }

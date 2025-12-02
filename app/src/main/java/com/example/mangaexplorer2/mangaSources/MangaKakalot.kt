@@ -155,4 +155,9 @@ class MangaKakalot() : MangaSource() {
         )
     }
 
+    override fun clearAllCaches(): MangaSource {
+        this.mangaPageCache.clear()
+        return this
+    }
+
 }

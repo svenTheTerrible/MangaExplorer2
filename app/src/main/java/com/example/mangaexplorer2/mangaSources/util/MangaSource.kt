@@ -24,4 +24,6 @@ abstract class MangaSource: Serializable{
     abstract fun getChapters(chapterMenuUrl: String, mangaName: String, callback:(chapters: List<ChapterResult>) -> Unit)
     abstract fun getSearchResult(searchterm: String, callback:(searchResults: List<SearchResult>)-> Unit)
     abstract fun getPageResultSync(pageUrl: String,chapterMenuUrl: String, mangaName: String): PageResult
+
+    abstract fun clearAllCaches(): MangaSource
 }
