@@ -49,3 +49,25 @@ data class MangaDexMultipleCoverImageResult(
     val response: String,
     val data: List<MangaDexCoverImageData>
 )
+
+data class MangaDexChapterResult(
+    val result: String,
+    val response: String,
+    val data: List<MangaDexChapterResultData>,
+    val limit: Int,
+    val offset: Int,
+    val total: Int
+)
+
+data class MangaDexChapterResultData(
+    val id: String,
+    val type: String,
+    val attributes: MangaDexChapterResultDataAttributes
+)
+
+data class MangaDexChapterResultDataAttributes(
+    val volume: String,
+    val chapter: String,
+    val title: String,
+    val pages: Int
+)

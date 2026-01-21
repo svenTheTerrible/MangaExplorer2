@@ -8,6 +8,9 @@ import com.example.mangaexplorer2.mangaSources.util.MangaSource
 import com.example.mangaexplorer2.mangaSources.util.MangaSourceName
 import com.example.mangaexplorer2.mangaSources.util.PageResult
 import com.example.mangaexplorer2.mangaSources.util.SearchResult
+import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexApiService
+import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexChapterResultData
+import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexChapterResultDataAttributes
 import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexMultipleCoverImageResult
 import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexSearchResultItem
 import com.example.mangaexplorer2.mangaSources.util.mangadex.MangaDexSearchResultItemRelationShip
@@ -27,9 +30,41 @@ class Mangadex(): MangaSource() {
         mangaName: String,
         callback: (List<ChapterResult>) -> Unit
     ) {
-
-        TODO("Not yet implemented")
+        val handler = Handler(Looper.getMainLooper())
+        CoroutineScope(Dispatchers.IO).launch {
+            val api = MangadexApi().getApiService()
+            val chapterList = loadCompleteChapterList(api, chapterMenuUrl)
+            val chapterResult = chapterList.map { ChapterResult(makeChapterName(it.attributes), it.id) }
+            handler.post {
+                callback(
+                    chapterResult
+                )
+            }
+        }
     }
+
+    private suspend fun loadCompleteChapterList(api: MangaDexApiService, mangaId: String): List<MangaDexChapterResultData>{
+        val fullList = mutableListOf<MangaDexChapterResultData>()
+        var chaptersFullyLoaded = false
+        var offset = 0
+        while(!chaptersFullyLoaded){
+            val apiResult = api.getChapters(mangaId, offset)
+            fullList.addAll(apiResult.data)
+            chaptersFullyLoaded = (apiResult.offset + apiResult.limit) >= apiResult.total
+            offset += 100
+        }
+        return fullList;
+    }
+
+    private fun makeChapterName(chapterAttributes: MangaDexChapterResultDataAttributes): String {
+        return listOfNotNull(
+            chapterAttributes.volume,
+            chapterAttributes.chapter,
+            chapterAttributes.title
+        ).joinToString(" ")
+    }
+
+
 
     override fun getSearchResult(
         searchterm: String,
@@ -56,7 +91,7 @@ class Mangadex(): MangaSource() {
         }
     }
 
-    fun makeCoverUrl(allCovers: MangaDexMultipleCoverImageResult, mangaId: String): String{
+    private fun makeCoverUrl(allCovers: MangaDexMultipleCoverImageResult, mangaId: String): String{
         val fileName = allCovers.data.find { coverRelationShipBelongsToMangaId(it.relationships, mangaId)  }?.attributes?.fileName
         if(fileName == null){
             return ""
@@ -64,15 +99,15 @@ class Mangadex(): MangaSource() {
         return "https://uploads.mangadex.org/covers/$mangaId/$fileName";
     }
 
-    fun coverRelationShipBelongsToMangaId(relationships: List<MangaDexSearchResultItemRelationShip>, mangaId: String): Boolean{
+    private fun coverRelationShipBelongsToMangaId(relationships: List<MangaDexSearchResultItemRelationShip>, mangaId: String): Boolean{
         return relationships.any { it.type == "manga" && it.id== mangaId }
     }
 
-    fun getCoverArtsFromRelationships(list: List<MangaDexSearchResultItemRelationShip>): String?{
+    private fun getCoverArtsFromRelationships(list: List<MangaDexSearchResultItemRelationShip>): String?{
         return list.find { it.type == "cover_art" }?.id
     }
 
-    fun getTitleFromSearchResult(item: MangaDexSearchResultItem): String {
+    private fun getTitleFromSearchResult(item: MangaDexSearchResultItem): String {
        return   item.attributes.title.getOrElse("en", {""})
     }
 

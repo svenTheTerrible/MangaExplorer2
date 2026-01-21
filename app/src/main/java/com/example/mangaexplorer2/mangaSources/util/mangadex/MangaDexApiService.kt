@@ -27,6 +27,16 @@ public interface MangaDexApiService {
         @Query("limit") limit: Int = 20
     ): MangaDexMultipleCoverImageResult
 
+    @GET("/chapter")
+    suspend fun getChapters(
+        @Query("manga") mangaId: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 100,
+        @Query("translatedLanguage[]") language: List<String> = listOf<String>("en"),
+        @Query("order[volume]") volumeOrdering: String = "asc",
+        @Query("order[chapter]") chapterOrdering: String = "asc",
+    ): MangaDexChapterResult
+
 
 }
 
