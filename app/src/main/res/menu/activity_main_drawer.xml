@@ -20,6 +20,10 @@
                     android:id="@+id/mangasource_mangakakalot"
                     android:icon="@drawable/globe"
                     android:title="Manga Kakalot"/>
+            <item
+                    android:id="@+id/mangasource_mangadex"
+                    android:icon="@drawable/globe"
+                    android:title="Mangadex"/>
         </menu>
     </item>
 

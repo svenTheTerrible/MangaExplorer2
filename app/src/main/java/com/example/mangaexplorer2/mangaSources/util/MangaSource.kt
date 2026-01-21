@@ -10,7 +10,9 @@ class PageResult(val imageUrl: String?, val pageCount: Int?, val pageAmount: Int
 
 enum class MangaSourceName{
     MANGATOWN,
-    MANGAKAKALOT
+    MANGAKAKALOT,
+
+    MANGADEX
 }
 
 class MangaPageCache(val images: List<String>?, val chapterName: String?, val pageAmount: Int?, val nextChapterUrl: String?): Serializable
