@@ -55,7 +55,7 @@ class MangaKakalot() : MangaSource() {
             val searchResults = doc.select(".story_item").map { resultItem ->
                 SearchResult(
                     name = resultItem.select(".story_name").select("a").text(),
-                    coverUrl = resultItem.select("a").first().select("img").attr("src"),
+                    coverUrl = resultItem.select("a").first()?.select("img")?.attr("src") ?: "",
                     url = resultItem.select(".story_name").select("a").attr("href")
                 )
             }
