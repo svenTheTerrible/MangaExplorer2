@@ -112,7 +112,11 @@ class Mangadex(): MangaSource() {
     }
 
     private fun getTitleFromSearchResult(item: MangaDexSearchResultItem): String {
-       return   item.attributes.title.getOrElse("en", {""})
+       return item.attributes.title.getOrElse("en", {
+          val titles = item.attributes.title
+           val availableTitleLanguages = titles.keys;
+           return if(availableTitleLanguages.isNotEmpty()) titles.getValue(availableTitleLanguages.first()) else ""
+       })
     }
 
     override fun getPageResultSync(
@@ -149,7 +153,7 @@ class Mangadex(): MangaSource() {
             result.chapter.data.map { result.baseUrl + "/data/" + result.chapter.hash + "/"  + it },
             currentChapterName,
             result.chapter.data.size,
-            chapterList.getOrNull(currentChapterIndex)?.id
+            chapterList.getOrNull(currentChapterIndex+1)?.id
         )
 
         mangaPageCache.put(cleanPageUrl, newCache)
@@ -169,6 +173,7 @@ class Mangadex(): MangaSource() {
     }
 
     override fun clearAllCaches(): MangaSource {
-        TODO("Not yet implemented")
+        mangaPageCache.clear()
+        return this
     }
 }
