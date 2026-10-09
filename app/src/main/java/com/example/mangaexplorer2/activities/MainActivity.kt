@@ -279,11 +279,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 intent.putExtra("mangaSource", MangaTown())
                 startActivity(intent)
             }
-            R.id.mangasource_mangakakalot -> {
+          /*  R.id.mangasource_mangakakalot -> {
                 val intent = Intent(this, SearchActivity::class.java)
                 intent.putExtra("mangaSource", MangaKakalot())
                 startActivity(intent)
-            }
+            }*/
             R.id.mangasource_mangadex -> {
                 val intent = Intent(this, SearchActivity::class.java)
                 intent.putExtra("mangaSource", Mangadex())

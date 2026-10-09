@@ -6,7 +6,7 @@ import com.example.mangaexplorer2.mangaSources.Mangadex
 
 class SourceRegister {
     companion object {
-        private val sources: List<MangaSource> = listOf(MangaTown(), MangaKakalot(), Mangadex())
+        private val sources: List<MangaSource> = listOf(MangaTown(), /*MangaKakalot(),*/ Mangadex())
 
         fun getSourceByString(sourceName: String): MangaSource {
             val mangaSource =

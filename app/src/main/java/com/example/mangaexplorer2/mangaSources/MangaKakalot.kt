@@ -13,7 +13,7 @@ class MangaKakalot() : MangaSource() {
 
     override val sourceName: MangaSourceName = MangaSourceName.MANGAKAKALOT
 
-    override val refererUrl = "https://mangakakalot.com/"
+    override val refererUrl = "www.mangakakalot.gg"
 
     override val mangaPageCache: MutableMap<String, MangaPageCache> = mutableMapOf()
 
@@ -50,7 +50,7 @@ class MangaKakalot() : MangaSource() {
         val handler = Handler(Looper.getMainLooper())
         Thread {
             val underscoreSearch = searchterm.replace(" ", "_")
-            val doc = Jsoup.connect("https://mangakakalot.com/search/story/$underscoreSearch")
+            val doc = Jsoup.connect("https://mangakakalot.gg/search/story/$underscoreSearch")
                 .referrer(refererUrl).timeout(jsoupTimeout).get()
             val searchResults = doc.select(".story_item").map { resultItem ->
                 SearchResult(
