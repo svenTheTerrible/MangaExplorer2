@@ -37,6 +37,11 @@ public interface MangaDexApiService {
         @Query("order[chapter]") chapterOrdering: String = "asc",
     ): MangaDexChapterResult
 
+    @GET("/at-home/server/{chapterId}")
+    suspend fun getPageDataForChapter(
+        @Path("chapterId") chapterId: String,
+    ): MandaDexChapterPageResult
+
 
 }
 

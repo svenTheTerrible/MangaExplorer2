@@ -32,6 +32,18 @@ data class MangaDexCoverImageResult(
     val data: MangaDexCoverImageData
 )
 
+data class MandaDexChapterPageResult(
+    val result: String,
+    val baseUrl: String,
+    val chapter: MandaDexChapterPageResultChapter
+)
+
+data class MandaDexChapterPageResultChapter(
+    val hash: String,
+    val data: List<String>,
+    val dataSaver: List<String>
+)
+
 
 data class MangaDexCoverImageData(
     val id: String,

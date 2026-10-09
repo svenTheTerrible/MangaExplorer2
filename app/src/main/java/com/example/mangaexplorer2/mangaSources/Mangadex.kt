@@ -116,7 +116,16 @@ class Mangadex(): MangaSource() {
         chapterMenuUrl: String,
         mangaName: String
     ): PageResult {
+
+        val api = MangadexApi().getApiService()
+        val result = api.getPageDataForChapter(pageUrl)
+
+        //todo call https://api.mangadex.org/at-home/server/a20b549f-8332-42aa-8584-ef91f4edf43f
+        // weird hash is pageUrl at end
+        //todo https://cmdxd98sb0x3yprd.mangadex.network/data/01197a88e280da31ccccde46b5dce08e/1-e3421734aa975fc4112c015c8433dfd1cf62017d99a93967aa1605e928b379ad.jpg
+
         TODO("Not yet implemented")
+        }
     }
 
     override fun clearAllCaches(): MangaSource {
