@@ -18,6 +18,7 @@ import com.example.mangaexplorer2.mangaSources.util.mangadex.MangadexApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class Mangadex(): MangaSource() {
 
@@ -56,7 +57,10 @@ class Mangadex(): MangaSource() {
         return fullList;
     }
 
-    private fun makeChapterName(chapterAttributes: MangaDexChapterResultDataAttributes): String {
+    private fun makeChapterName(chapterAttributes: MangaDexChapterResultDataAttributes?): String {
+        if(chapterAttributes == null){
+            return ""
+        }
         return listOfNotNull(
             chapterAttributes.volume,
             chapterAttributes.chapter,
@@ -116,16 +120,52 @@ class Mangadex(): MangaSource() {
         chapterMenuUrl: String,
         mangaName: String
     ): PageResult {
+        val splitPageUrl = pageUrl.split("/")
+        val cleanPageUrl = splitPageUrl.first()
+        val currentPage = if(splitPageUrl.size == 2) splitPageUrl.last() else "1"
+        val currentPageNumber =  currentPage.toInt()
+        val nextPageNumber = currentPageNumber +1
+
+        val cache = mangaPageCache.get(cleanPageUrl)
+
+        if(cache != null){
+            return makePageResultFromCache(cache, currentPageNumber, nextPageNumber, cleanPageUrl)
+        }
 
         val api = MangadexApi().getApiService()
-        val result = api.getPageDataForChapter(pageUrl)
+        val result = runBlocking { api.getPageDataForChapter(cleanPageUrl) }
 
         //todo call https://api.mangadex.org/at-home/server/a20b549f-8332-42aa-8584-ef91f4edf43f
         // weird hash is pageUrl at end
         //todo https://cmdxd98sb0x3yprd.mangadex.network/data/01197a88e280da31ccccde46b5dce08e/1-e3421734aa975fc4112c015c8433dfd1cf62017d99a93967aa1605e928b379ad.jpg
 
-        TODO("Not yet implemented")
-        }
+        val chapterList = runBlocking { loadCompleteChapterList(api, chapterMenuUrl) }
+
+        val currentChapterIndex = chapterList.indexOfFirst { it.id == cleanPageUrl }
+
+        val currentChapterName = makeChapterName(chapterList.getOrNull(currentChapterIndex)?.attributes)
+
+        val newCache = MangaPageCache(
+            result.chapter.data.map { result.baseUrl + "/data/" + result.chapter.hash + "/"  + it },
+            currentChapterName,
+            result.chapter.data.size,
+            chapterList.getOrNull(currentChapterIndex)?.id
+        )
+
+        mangaPageCache.put(cleanPageUrl, newCache)
+
+        return makePageResultFromCache(newCache, currentPageNumber, nextPageNumber, cleanPageUrl);
+    }
+
+    private fun makePageResultFromCache(cache: MangaPageCache, currentPageNumber: Int, nextPageNumber: Int, cleanPageUrl: String): PageResult{
+        val savePageAmount = cache.pageAmount?:0
+        return PageResult(
+            cache.images?.get(currentPageNumber -1),
+            currentPageNumber,
+            cache.pageAmount,
+            cache.chapterName,
+            if(savePageAmount < nextPageNumber) cache.nextChapterUrl else "$cleanPageUrl/$nextPageNumber"
+        )
     }
 
     override fun clearAllCaches(): MangaSource {
