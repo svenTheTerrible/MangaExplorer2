@@ -10,6 +10,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.mangaSources.util.MangaSource
@@ -119,10 +120,12 @@ class PageBuffer(
             LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build()
         )
 
+        val screenWidth = context.resources.displayMetrics.widthPixels
+
         GlideApp.with(context)
             .asBitmap()
-            .skipMemoryCache(true)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .diskCacheStrategy(DiskCacheStrategy.DATA)
+            .override(screenWidth, Target.SIZE_ORIGINAL)
             .load(glideUrl)
             .into(object : CustomTarget<Bitmap>() {
                 override fun onLoadFailed(errorDrawable: Drawable?) {
