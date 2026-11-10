@@ -26,5 +26,6 @@ Android app for browsing manga across multiple sources (MangaDex API, MangaTown/
 - Manga sources in `mangaSources/` — each implements `MangaSource`; registered via `SourceRegister`
 - `Mangadex.kt` uses Retrofit; `MangaTown.kt` and `MangaKakalot.kt` use jsoup scraping
 - Favorites stored in SQLite (`utility/FavoritenDB.kt`, `utility/DbHelper.kt`)
+- Reader pages bypass Glide: `activities/util/PageImageCache.kt` downloads them into `cacheDir/page_images` (own size limit and cleanup) and `activities/util/PageImageSlicer.kt` region-decodes them into bitmap slices; Glide (covers, chapter list) keeps its own cache untouched
 - Manifest declares `INTERNET` and `WRITE_EXTERNAL_STORAGE` permissions; uses cleartext traffic (`usesCleartextTraffic="true"`)
 - `android:largeHeap="true"` enabled for image-heavy reading

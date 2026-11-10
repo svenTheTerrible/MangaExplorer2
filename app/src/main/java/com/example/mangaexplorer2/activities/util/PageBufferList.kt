@@ -52,9 +52,10 @@ class PageBufferList(private val context: Context, private val pageBufferSize: I
     private fun clearOldBuffers(){
         val threeMinutes = 1000*60*3
 
-        //recycle old bitmaps
+        //recycle old bitmaps and drop their images from the disk cache
         pageBufferList.filter { it.getResult().loadingStatus == PageLoadingState.LOADED && it.timestamp + threeMinutes < System.currentTimeMillis()}.forEach {
             it.getResult().imageBitmap.forEach { it.recycle() }
+            it.clearCachedImage()
         }
 
         //remove old pageResults

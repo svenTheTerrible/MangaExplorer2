@@ -2,17 +2,9 @@ package com.example.mangaexplorer2.activities.util
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.transition.Transition
-import com.example.mangaexplorer2.GlideApp
 import com.example.mangaexplorer2.mangaSources.util.MangaSource
 import com.example.mangaexplorer2.mangaSources.util.PageResult
 import java.lang.Exception
@@ -115,65 +107,49 @@ class PageBuffer(
             return
         }
 
-        val glideUrl = GlideUrl(
-            imageUrl,
-            LazyHeaders.Builder().addHeader("Referer", mangaSource.refererUrl).build()
-        )
+        val imageFile = PageImageCache.get(context)
+            .get(imageUrl, mapOf("Referer" to mangaSource.refererUrl))
+        if (imageFile == null) {
+            retryImageOrFail(tryCount)
+            return
+        }
 
         val screenWidth = context.resources.displayMetrics.widthPixels
+        val bitmaps = PageImageSlicer.decodeSlices(imageFile, screenWidth)
+        if (bitmaps.isEmpty()) {
+            //the downloaded file is probably broken, remove it so the next try can download it again
+            PageImageCache.get(context).remove(imageUrl)
+            retryImageOrFail(tryCount)
+            return
+        }
 
-        GlideApp.with(context)
-            .asBitmap()
-            .diskCacheStrategy(DiskCacheStrategy.DATA)
-            .override(screenWidth, Target.SIZE_ORIGINAL)
-            .load(glideUrl)
-            .into(object : CustomTarget<Bitmap>() {
-                override fun onLoadFailed(errorDrawable: Drawable?) {
-                    super.onLoadFailed(errorDrawable)
-                    if (tryCount < MAX_LOADING_TRIES) {
-                        imageUrlToBitmapList(tryCount + 1)
-                        return
-                    }
-                    errorType = PageLoadingError.IMAGE_NOT_LOADING
-                    loadingStatus = PageLoadingState.FAILED_TO_LOAD
-                }
-
-
-
-                override fun onLoadCleared(p0: Drawable?) {}
-                override fun onResourceReady(p0: Bitmap, p1: Transition<in Bitmap>?) {
-                    imageBitmaps = if (p0.height / p0.width > 2.5) {
-                        splitBitmaps(p0)
-                    } else {
-                        listOf(p0)
-                    }
-                    loadingStatus = PageLoadingState.LOADED
-                    nextPageCallback(pageResult?.nextPageUrl)
-                }
-            })
+        imageBitmaps = bitmaps
+        loadingStatus = PageLoadingState.LOADED
+        notifyNextPage(pageResult?.nextPageUrl)
     }
 
-    private fun splitBitmaps(origBitmap: Bitmap): List<Bitmap> {
-        val bitmaps = mutableListOf<Bitmap>()
-        val origHeight = origBitmap.height
-        var processedHeight = 0
-        val chunkHeight = 50
-
-        while (processedHeight < origHeight) {
-            val restHeight = origHeight - processedHeight
-            val heightToUse = if (restHeight < chunkHeight) restHeight else chunkHeight
-            bitmaps.add(
-                Bitmap.createBitmap(
-                    origBitmap,
-                    0,
-                    processedHeight,
-                    origBitmap.width,
-                    heightToUse
-                )
-            )
-            processedHeight += chunkHeight
+    private fun retryImageOrFail(tryCount: Int) {
+        if (tryCount < MAX_LOADING_TRIES) {
+            Thread.sleep(1000)
+            imageUrlToBitmapList(tryCount + 1)
+            return
         }
-        origBitmap.recycle();
-        return bitmaps
+        errorType = PageLoadingError.IMAGE_NOT_LOADING
+        loadingStatus = PageLoadingState.FAILED_TO_LOAD
+    }
+
+    /**
+     * Hands the image of this page back to the disk cache, so the images of pages that are not
+     * needed anymore do not pile up. Glide's cache is not used here anymore, so nothing else is affected.
+     */
+    fun clearCachedImage() {
+        pageResult?.imageUrl?.let { PageImageCache.get(context).remove(it) }
+    }
+
+    private fun notifyNextPage(nextPageUrl: String?) {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            nextPageCallback(nextPageUrl)
+        }
     }
 }

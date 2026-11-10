@@ -74,6 +74,17 @@ class PageReaderActivity : AppCompatActivity(), GestureDetector.OnGestureListene
         super.onSaveInstanceState(outState, outPersistentState)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        //the page images are the biggest files the app downloads, so they are removed as soon as the
+        //reader is left. Only the folder of PageImageCache is touched, the glide cache of the rest of
+        //the app stays untouched.
+        if (isFinishing) {
+            val imageCache = PageImageCache.get(applicationContext)
+            Thread { imageCache.clear() }.start()
+        }
+    }
+
     private fun unpackExtrasFromPreviousInstance(savedInstanceState: Bundle?): Boolean{
         if(savedInstanceState == null){
             return false
